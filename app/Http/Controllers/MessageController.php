@@ -6,32 +6,22 @@ use App\Models\Message;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Cache;
 
 class MessageController extends Controller
 {
-    public function index()
+    public function index($phone)
     {
-        $messages = Message::all();
+        $messages['code'] = Cache::get($phone);
+        if($messages['code'])
+            $messages['phone'] = $phone;
         return view('messages', compact('messages'));
     }
-    public function sendMessage(Request $request)
+    public static function sendMessage($phone)
     {
-        $validator = Validator::make($request->all() , [
-            'phone' => ['required','max:10','min:10'],
-        ]);
-        if ($validator->fails()){
-            return response()->json([
-                'message' => "Sending failed",
-                'data' =>$validator->errors()
-            ]);
-        }
-        Message::create(
-            [
-                'phone'=>$request->phone,
-                'code'=>random_int(100000, 999999)
-            ]
-        );
-        return response()->json (['message' => 'Code sent successfully']);
+        $code=random_int(100000, 999999);
+        Cache::put($phone, $code, 300);
+        return response()->json (['phone' => $phone,'code' => $code]);
     }
 }
 

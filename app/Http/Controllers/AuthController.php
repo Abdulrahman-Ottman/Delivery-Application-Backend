@@ -7,6 +7,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
@@ -41,33 +42,30 @@ class AuthController extends Controller
             'messages'=>'logged out successfully'
         ],200);
     }
-    public function checkInfo(Request $request){
+    public function verify(Request $request){
         $validator = Validator::make($request->all() , [
-            'phone' => ['required','max:10','min:10'],
-            'password' => ['required','min:8'],
-            'first_name' => 'required',
-            'last_name' => 'required',
-            'location' => 'required',
+            'phone' => ['required'],
         ]);
         if ($validator->fails()){
             return response()->json([
-                'message' => "Registration failed",
+                'message' => "Verifying failed",
                 'data' =>$validator->errors()
             ]);
         }
         $phone = $request->input('phone');
         if(User::query()->where('phone', $phone)->first())
             return response()->json (['message' => 'The number is already in use'], 409);
-        if($phone[0]!=0||$phone[1]!=9)
-            return response()->json (['message' => 'Number should start with 09'], 400);
-        return redirect()->route('sendMessage', ['phone' => $phone]);
+//        if(phone number is not correct)
+//                return ...
+
+        return MessageController::sendMessage($phone);
     }
     public function register(Request $request)
     {
         $validator = Validator::make($request->all() , [
             'phone' => ['required','max:10','min:10'],
+            'code' => ['required','max:6','min:6'],
             'password' => ['required','min:8'],
-            'code' => ['required','min:6','max:6'],
             'first_name' => 'required',
             'last_name' => 'required',
             'location' => 'required',
@@ -84,10 +82,7 @@ class AuthController extends Controller
         $first_name = $request->input('first_name');
         $last_name = $request->input('last_name');
         $location = $request->input('location');
-        $sms = Message::where('phone',$phone)->latest()->first();
-        if(!$sms)
-            return response()->json (['message' => 'Incorrect code'], 400);
-        if($sms['code']!=$code)
+        if(Cache::get($phone)!=$code)
             return response()->json (['message' => 'Incorrect code'], 400);
         $user=User::create([
             'phone'=>$phone,

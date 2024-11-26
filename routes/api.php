@@ -11,13 +11,12 @@ use Illuminate\Support\Facades\Route;
 //})->middleware('auth:sanctum');
 
 Route::controller(AuthController::class)->group(function (){
-    Route::post('/checkInfo', 'checkInfo');
+    Route::post('/verify', 'verify');
     Route::post('/register', 'register');
     Route::post('/login', 'login');
     Route::post('/logout', 'logout')->middleware('auth:sanctum');
 });
-Route::controller(UserController::class)->group(function (){
-    Route::get('/getUserInfo/{phone}', 'getUserInfo');
-    Route::get('/getUserImage/{phone}', 'getUserImage');
-});
-Route::get('/sendMessage{phone}', [MessageController::class, 'sendMessage'])->name('sendMessage');
+//Route::controller(UserController::class)->group(function (){
+//    Route::get('/getUserInfo/{phone}', 'getUserInfo');
+//    Route::get('/getUserImage/{phone}', 'getUserImage');
+//});
