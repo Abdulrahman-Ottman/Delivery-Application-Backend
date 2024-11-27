@@ -44,7 +44,7 @@ class AuthController extends Controller
     }
     public function verify(Request $request){
         $validator = Validator::make($request->all() , [
-            'phone' => ['required' ,  'regex:/^+(d{1,3})[-.s]?(?(d{1,4}))?[-.s]?(?(d{1,4}))?[-.s]?d{3,10}$/'],
+            'phone' => ['required' ,'unique:users,phone' , 'regex:/^+(d{1,3})[-.s]?(?(d{1,4}))?[-.s]?(?(d{1,4}))?[-.s]?d{3,10}$/'],
         ]);
         if ($validator->fails()){
             return response()->json([
@@ -53,11 +53,7 @@ class AuthController extends Controller
             ]);
         }
         $phone = $request->input('phone');
-        if(User::query()->where('phone', $phone)->first())
-            return response()->json (['message' => 'The number is already in use'], 409);
 
-
-        // it is not ideal to call a controller method from inside another controller
         $response = $this->sendMessage($phone);
         return response()->json($response);
     }
