@@ -89,7 +89,7 @@
             @endif
         </li>
     </ul>
-</div>A
+</div>
 
 </body>
 </html>

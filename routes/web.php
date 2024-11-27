@@ -6,4 +6,4 @@ use Illuminate\Support\Facades\Route;
 //Route::get('/', function () {
 //    return view('welcome');
 //});
-Route::get('/sms/{phone}', [MessageController::class, 'index'])->name('sms');
+Route::get('/sms/{phone}', [MessageController::class, 'show'])->name('sms');

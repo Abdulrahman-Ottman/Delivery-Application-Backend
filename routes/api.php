@@ -16,6 +16,8 @@ Route::controller(AuthController::class)->group(function (){
     Route::post('/login', 'login');
     Route::post('/logout', 'logout')->middleware('auth:sanctum');
 });
+
+
 //Route::controller(UserController::class)->group(function (){
 //    Route::get('/getUserInfo/{phone}', 'getUserInfo');
 //    Route::get('/getUserImage/{phone}', 'getUserImage');

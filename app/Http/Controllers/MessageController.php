@@ -10,18 +10,14 @@ use Illuminate\Support\Facades\Cache;
 
 class MessageController extends Controller
 {
-    public function index($phone)
+    //index does not have inputs
+    public function show($phone)
     {
         $messages['code'] = Cache::get($phone);
         if($messages['code'])
             $messages['phone'] = $phone;
-        return view('messages', compact('messages'));
+        return view('messages', ['messages' => $messages]);
     }
-    public static function sendMessage($phone)
-    {
-        $code=random_int(100000, 999999);
-        Cache::put($phone, $code, 300);
-        return response()->json (['phone' => $phone,'code' => $code]);
-    }
+    // it is not a good approuch to define static method from inside controller
 }
 
