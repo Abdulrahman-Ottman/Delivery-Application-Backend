@@ -44,7 +44,10 @@ class AuthController extends Controller
     }
     public function verify(Request $request){
         $validator = Validator::make($request->all() , [
-            'phone' => ['required' ,'unique:users,phone' , 'regex:/^+(d{1,3})[-.s]?(?(d{1,4}))?[-.s]?(?(d{1,4}))?[-.s]?d{3,10}$/'],
+            'phone' => ['required' ,
+                'unique:users,phone',
+                'regex:/^\+(\d{1,3})[-.\s]?\(?(\d{1,4})\)?[-.\s]?\(?(\d{1,4})\)?[-.\s]?\d{4,10}$/'
+            ],
         ]);
         if ($validator->fails()){
             return response()->json([
@@ -60,9 +63,9 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $validator = Validator::make($request->all() , [
-            'phone' => ['required','max:10','min:10'],
+            'phone' => ['required','regex:/^\+(\d{1,3})[-.\s]?\(?(\d{1,4})\)?[-.\s]?\(?(\d{1,4})\)?[-.\s]?\d{4,10}$/'],
             'code' => ['required','max:4','min:4'],
-            'password' => ['required','min:8' , 'confirmed'],
+            'password' => ['required','min:8', 'confirmed'],
             'first_name' => 'required',
             'last_name' => 'required',
             'location' => 'required',
@@ -82,8 +85,9 @@ class AuthController extends Controller
         $location = $request->input('location');
         if(Cache::get($phone)!=$code)
             return response()->json (['message' => 'Incorrect code'], 400);
-
-        $path = $request->file('image')->store('profile-images', 'public');
+        $path=null;
+        if($request->file('image'))
+            $path = $request->file('image')->store('images/profile-images', 'public');
 
         $user=User::create([
             'phone'=>$phone,
