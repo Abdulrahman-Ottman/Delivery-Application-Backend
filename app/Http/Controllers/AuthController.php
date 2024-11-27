@@ -15,7 +15,7 @@ class AuthController extends Controller
     use SendsMessages;
     public function login(Request $request){
         $validator = Validator::make($request->all() , [
-            'phone' => ['required','max:10','min:10'],
+            'phone' => ['required','regex:/^+(d{1,3})[-.s]?(?(d{1,4}))?[-.s]?(?(d{1,4}))?[-.s]?d{3,10}$/'],
             'password' => ['required']
         ]);
 
