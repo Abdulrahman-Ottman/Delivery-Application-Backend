@@ -8,7 +8,7 @@ trait SendsMessages
     public function sendMessage($phone)
     {
         do {
-            $code = random_int(100000, 999999);
+            $code = random_int(1000, 9999);
         } while (Cache::has($code));
 
         Cache::forever($phone, $code);
