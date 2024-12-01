@@ -15,7 +15,7 @@ class AuthController extends Controller
     use SendsMessages;
     public function login(Request $request){
         $validator = Validator::make($request->all() , [
-            'phone' => ['required','regex:/^+(d{1,3})[-.s]?(?(d{1,4}))?[-.s]?(?(d{1,4}))?[-.s]?d{3,10}$/'],
+            'phone' => ['required' ,'regex:/^\+(\d{1,3})[-.\s]?\(?(\d{1,4})\)?[-.\s]?\(?(\d{1,4})\)?[-.\s]?\d{4,10}$/'],
             'password' => ['required']
         ]);
 
@@ -42,12 +42,30 @@ class AuthController extends Controller
             'messages'=>'logged out successfully'
         ],200);
     }
+    public function sendCode(Request $request){
+        $validator = Validator::make($request->all() , [
+            'phone' => ['required',
+                'unique:users,phone',
+                'regex:/^\+(\d{1,3})[-.\s]?\(?(\d{1,4})\)?[-.\s]?\(?(\d{1,4})\)?[-.\s]?\d{4,10}$/'
+            ],
+        ]);
+        if ($validator->fails()){
+            return response()->json([
+                'message' => "Sending failed",
+                'data' =>$validator->errors()
+            ]);
+        }
+        $phone = $request->input('phone');
+        $this->sendMessage($phone);
+        return response()->json(['message' => 'Code sent successfully']);
+    }
     public function verify(Request $request){
         $validator = Validator::make($request->all() , [
             'phone' => ['required' ,
                 'unique:users,phone',
                 'regex:/^\+(\d{1,3})[-.\s]?\(?(\d{1,4})\)?[-.\s]?\(?(\d{1,4})\)?[-.\s]?\d{4,10}$/'
             ],
+            'code'  => ['required','min:4','max:4']
         ]);
         if ($validator->fails()){
             return response()->json([
@@ -56,15 +74,23 @@ class AuthController extends Controller
             ]);
         }
         $phone = $request->input('phone');
+        $code = $request->input('code');
+        if(Cache::get($phone)!=$code)
+            return response()->json (['message' => 'Incorrect code'], 400);
+        $token = base64_encode($phone);
 
-        $response = $this->sendMessage($phone);
-        return response()->json($response);
+        Cache::forever($token, $phone);
+        Cache::forget($phone);
+
+        return response()->json([
+            'message' => 'Verification successful',
+            'token' => $token
+        ]);
     }
     public function register(Request $request)
     {
         $validator = Validator::make($request->all() , [
-            'phone' => ['required','regex:/^\+(\d{1,3})[-.\s]?\(?(\d{1,4})\)?[-.\s]?\(?(\d{1,4})\)?[-.\s]?\d{4,10}$/'],
-            'code' => ['required','max:4','min:4'],
+            'token' => 'required',
             'password' => ['required','min:8', 'confirmed'],
             'first_name' => 'required',
             'last_name' => 'required',
@@ -77,14 +103,14 @@ class AuthController extends Controller
                 'data' =>$validator->errors()
             ]);
         }
-        $phone = $request->input('phone');
+        $token = $request->input('token');
+        if(!Cache::get($token))
+            return response()->json (['message' => 'Incorrect token'], 400);
+        $phone = base64_decode($token);
         $password = $request->input('password');
-        $code = $request->input('code');
         $first_name = $request->input('first_name');
         $last_name = $request->input('last_name');
         $location = $request->input('location');
-        if(Cache::get($phone)!=$code)
-            return response()->json (['message' => 'Incorrect code'], 400);
         $path=null;
         if($request->file('image'))
             $path = $request->file('image')->store('images/profile-images', 'public');
@@ -98,13 +124,12 @@ class AuthController extends Controller
             'location'=>$location,
             'image' => $path
         ]);
+        Cache::forget($token);
 
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        Cache::forget($phone);
+        $accessToken = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
-            'access_token' => $token,
+            'access_token' => $accessToken,
         ] ,200);
     }
 }

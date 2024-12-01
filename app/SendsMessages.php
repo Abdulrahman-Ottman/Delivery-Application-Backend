@@ -13,9 +13,9 @@ trait SendsMessages
 
         Cache::forever($phone, $code);
 
-        return [
-            'phone' => $phone,
-            'code' => $code,
-        ];
+//        return [
+//            'phone' => $phone,
+//            'code' => $code,
+//        ];
     }
 }
