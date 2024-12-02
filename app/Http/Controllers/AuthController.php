@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\SendsMessages;
+use App\Traits\SendsMessages;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -16,7 +16,7 @@ class AuthController extends Controller
     public function login(Request $request){
         $validator = Validator::make($request->all() , [
             'phone' => ['required' ,'regex:/^\+(\d{1,3})[-.\s]?\(?(\d{1,4})\)?[-.\s]?\(?(\d{1,4})\)?[-.\s]?\d{4,10}$/'],
-            'password' => ['required']
+            'password' => ['required' , 'min:8']
         ]);
 
         if ($validator->fails()){
@@ -94,7 +94,8 @@ class AuthController extends Controller
             'password' => ['required','min:8', 'confirmed'],
             'first_name' => 'required',
             'last_name' => 'required',
-            'location' => 'required',
+            'location.country' => ['required' , 'string'],
+            'location.city' =>  ['required' , 'string'],
             'image ' =>'image|mimes:png,jpg'
         ]);
         if ($validator->fails()){
