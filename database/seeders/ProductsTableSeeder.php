@@ -28,7 +28,7 @@ class ProductsTableSeeder extends Seeder
 
             ],[
                 'name' => 'T-shirt',
-                'description' => 'A coton t-shirt',
+                'description' => 'A cotton t-shirt',
                 'price' => 10.00,
                 'quantity' => 19,
                 'details'=> json_encode([
