@@ -23,7 +23,7 @@ class AuthController extends Controller
             return response()->json([
                 'message' => "login failed",
                 'data' =>$validator->errors()
-            ]);
+            ],401 );
         }
         $user = User::where('phone', $request->phone)->first();
         if (!$user || !Hash::check($request->password, $user->password)) {
@@ -53,11 +53,11 @@ class AuthController extends Controller
             return response()->json([
                 'message' => "Sending failed",
                 'data' =>$validator->errors()
-            ]);
+            ],401);
         }
         $phone = $request->input('phone');
         $this->sendMessage($phone);
-        return response()->json(['message' => 'Code sent successfully']);
+        return response()->json(['message' => 'Code sent successfully'],200);
     }
     public function verify(Request $request){
         $validator = Validator::make($request->all() , [
@@ -71,7 +71,7 @@ class AuthController extends Controller
             return response()->json([
                 'message' => "Verifying failed",
                 'data' =>$validator->errors()
-            ]);
+            ],401);
         }
         $phone = $request->input('phone');
         $code = $request->input('code');
@@ -85,7 +85,7 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Verification successful',
             'token' => $token
-        ]);
+        ],200);
     }
     public function register(Request $request)
     {
@@ -101,7 +101,7 @@ class AuthController extends Controller
             return response()->json([
                 'message' => "Registration failed",
                 'data' =>$validator->errors()
-            ]);
+            ],401);
         }
         $token = $request->input('token');
         if(!Cache::get($token))
