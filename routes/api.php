@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
@@ -17,6 +18,13 @@ Route::controller(AuthController::class)->group(function (){
     Route::post('/login', 'login');
     Route::post('/logout', 'logout')->middleware('auth:sanctum');
 });
+
+Route::controller(CategoryController::class)->prefix('categories')->group(function () {
+    Route::get('/', 'getAllCategories');
+    Route::get('{category}/subcategories', 'getSubcategoriesByCategory');
+});
+
+
 //Route::controller(UserController::class)->group(function (){
 //    Route::get('/getUserInfo/{phone}', 'getUserInfo');
 //    Route::get('/getUserImage/{phone}', 'getUserImage');
