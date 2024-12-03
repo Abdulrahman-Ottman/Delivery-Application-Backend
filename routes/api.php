@@ -24,6 +24,8 @@ Route::controller(CategoryController::class)->prefix('categories')->group(functi
     Route::get('{category}/subcategories', 'getSubcategoriesByCategory');
 });
 
+Route::get('/search' , \App\Http\Controllers\SearchController::class);
+
 
 //Route::controller(UserController::class)->group(function (){
 //    Route::get('/getUserInfo/{phone}', 'getUserInfo');

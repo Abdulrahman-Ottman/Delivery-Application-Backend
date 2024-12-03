@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Product extends Model
 {
+    protected $hidden = ['store_id'];
     public function store() : BelongsTo
     {
         return $this->belongsTo(Store::class);
@@ -17,6 +18,10 @@ class Product extends Model
     public function images() : HasMany
     {
         return $this->hasMany(ProductImage::class);
+    }
+    public function mainImage()
+    {
+        return $this->hasOne(ProductImage::class)->where('is_main', true);
     }
 
     public function categories() : BelongsToMany
