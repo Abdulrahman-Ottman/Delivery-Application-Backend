@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\AdResource;
 use App\Models\Ad;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class AdController extends Controller
 {
@@ -41,12 +41,18 @@ class AdController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $validator = Validator::make($request->all(),[
             'image' => 'required|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        $path = $request->file('image')->store('ads', 'public');
+        if ($validator->fails()){
+            return response()->json([
+                'message' => "failed to create the Ad",
+                'data' =>$validator->errors()
+            ],401);
+        }
 
+        $path = $request->file('image')->store('ads', 'public');
         $ad = Ad::create([
             'image' => $path,
         ]);
