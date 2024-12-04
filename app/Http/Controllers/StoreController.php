@@ -9,7 +9,7 @@ class StoreController extends Controller
 {
     public function allStores()
     {
-        $stores = Store::paginate(10);
+        $stores = Store::select('id', 'name', 'image')->paginate(10);
 
         if ($stores->isEmpty()) {
             return response()->json([
@@ -17,18 +17,9 @@ class StoreController extends Controller
             ], 404);
         }
 
-        $stores->getCollection()->transform(function ($store) {
-            return [
-                'id' => $store->id,
-                'name' => $store->name,
-//                'location' => json_decode($store->location),
-                'image' => $store->image,
-            ];
-        });
-
         return response()->json([
             'current_page' => $stores->currentPage(),
-            'data' => $stores->getCollection(),
+            'data' => $stores,
             'first_page_url' => $stores->url(1),
             'last_page' => $stores->lastPage(),
             'last_page_url' => $stores->url($stores->lastPage()),
@@ -43,7 +34,7 @@ class StoreController extends Controller
     }
     public function latestStores()
     {
-        $stores = Store::latest()->take(10)->get();
+        $stores = Store::select('id', 'name', 'image')->latest()->take(10)->get();
 
         if ($stores->isEmpty()) {
             return response()->json([
@@ -51,18 +42,9 @@ class StoreController extends Controller
             ], 404);
         }
 
-        $transformedStores = $stores->transform(function ($store) {
-            return [
-                'id' => $store->id,
-                'name' => $store->name,
-//                'location' => json_decode($store->location),
-                'image' => $store->image,
-            ];
-        });
-
         return response()->json([
-            'data' => $transformedStores,
-            'total' => $transformedStores->count(),
+            'data' => $stores,
+            'total' => count($stores),
         ]);
     }
     public function store(Request $request)
@@ -78,7 +60,6 @@ class StoreController extends Controller
                 'id' => $product->id,
                 'name' => $product->name,
                 'price' => $product->price,
-                'formatted_price' => '$' . number_format($product->price, 2),
                 'image' => $product->images->isNotEmpty() ? $product->images->first()->path : null,
             ];
         });

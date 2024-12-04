@@ -9,9 +9,8 @@ class ProductController extends Controller
 {
     public function allProducts()
     {
-        $products = Product::with(['images' => function($query) {
-            $query->where('is_main', true);
-        }, 'store'])->paginate(10);
+        $products = Product::select('id', 'name', 'price', 'store_id')->with(['mainImage:product_id,path',
+            'store:id,name'])->paginate(10);
 
         if ($products->isEmpty()) {
             return response()->json([
@@ -19,24 +18,9 @@ class ProductController extends Controller
             ], 404);
         }
 
-        $products->getCollection()->transform(function ($product) {
-            return [
-                'id' => $product->id,
-                'name' => $product->name,
-                'price' => $product->price,
-                'formatted_price' => '$' . number_format($product->price, 2),
-//                'description' => $product->description,
-//                'quantity' => $product->quantity,
-//                'details' => json_decode($product->details),
-                'store_id' => $product->store_id,
-                'store_name' => $product->store ? $product->store->name : null,
-                'image' => $product->images->isNotEmpty() ? $product->images->first()->path : null,
-            ];
-        });
-
         return response()->json([
             'current_page' => $products->currentPage(),
-            'data' => $products->getCollection(),
+            'data' => $products,
             'first_page_url' => $products->url(1),
             'last_page' => $products->lastPage(),
             'last_page_url' => $products->url($products->lastPage()),
@@ -51,9 +35,8 @@ class ProductController extends Controller
     }
     public function latestProducts()
     {
-        $products = Product::with(['images' => function($query) {
-            $query->where('is_main', true);
-        }, 'store'])->latest()->take(10)->get();
+        $products = Product::select('id', 'name', 'price', 'store_id')->with(['mainImage:product_id,path',
+            'store:id,name'])->latest()->take(10)->get();
 
         if ($products->isEmpty()) {
             return response()->json([
@@ -61,24 +44,9 @@ class ProductController extends Controller
             ], 404);
         }
 
-        $transformedProducts = $products->transform(function ($product) {
-            return [
-                'id' => $product->id,
-                'name' => $product->name,
-                'price' => $product->price,
-                'formatted_price' => '$' . number_format($product->price, 2),
-//                'description' => $product->description,
-//                'quantity' => $product->quantity,
-//                'details' => json_decode($product->details),
-                'store_id' => $product->store_id,
-                'store_name' => $product->store ? $product->store->name : null,
-                'image' => $product->images->isNotEmpty() ? $product->images->first()->path : null,
-            ];
-        });
-
         return response()->json([
-            'data' => $transformedProducts,
-            'total' => $transformedProducts->count(),
+            'data' => $products,
+            'total' => count($products),
         ]);
     }
     public function product(Request $request)
@@ -93,7 +61,6 @@ class ProductController extends Controller
             'id' => $product->id,
             'name' => $product->name,
             'price' => $product->price,
-            'formatted_price' => '$' . number_format($product->price, 2),
             'description' => $product->description,
             'quantity' => $product->quantity,
             'details' => json_decode($product->details),
