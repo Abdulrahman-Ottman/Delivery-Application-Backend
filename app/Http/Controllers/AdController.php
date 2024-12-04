@@ -38,4 +38,22 @@ class AdController extends Controller
             ],
         ], 200);
     }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'image' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
+
+        $path = $request->file('image')->store('ads', 'public');
+
+        $ad = Ad::create([
+            'image' => $path,
+        ]);
+
+        return response()->json([
+            'message' => 'Ad created successfully.',
+            'ad' => $ad,
+        ], 201);
+    }
 }

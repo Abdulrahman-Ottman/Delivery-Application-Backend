@@ -26,8 +26,12 @@ Route::controller(CategoryController::class)->prefix('categories')->group(functi
     Route::get('{category}/subcategories', 'getSubcategoriesByCategory');
 });
 
+Route::controller(AdController::class)->group(function (){
+    Route::get('/ads' , [AdController::class , 'index']);
+    Route::post('/ads' , [AdController::class, 'store']);
+});
+
 Route::get('/search' , SearchController::class);
-Route::get('/ads' , [AdController::class , 'index']);
 
 
 //Route::controller(UserController::class)->group(function (){
