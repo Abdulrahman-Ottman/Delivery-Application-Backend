@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Ad;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class AdController extends Controller
@@ -61,5 +62,26 @@ class AdController extends Controller
             'message' => 'Ad created successfully.',
             'ad' => $ad,
         ], 201);
+    }
+
+    public function destroy($id)
+    {
+        $ad = Ad::find($id);
+
+        if (!$ad) {
+            return response()->json([
+                'message' => 'Ad not found.',
+            ], 404);
+        }
+
+        if (Storage::disk('public')->exists($ad->image)) {
+            Storage::disk('public')->delete($ad->image);
+        }
+
+        $ad->delete();
+
+        return response()->json([
+            'message' => 'Ad deleted successfully.',
+        ], 200);
     }
 }

@@ -27,8 +27,10 @@ Route::controller(CategoryController::class)->prefix('categories')->group(functi
 });
 
 Route::controller(AdController::class)->group(function (){
-    Route::get('/ads' , [AdController::class , 'index']);
-    Route::post('/ads' , [AdController::class, 'store']);
+    Route::get('/ads' , 'index');
+    Route::post('/ads' , 'store');
+    Route::delete('/ads/{id}',  'destroy');
+
 });
 
 Route::get('/search' , SearchController::class);
