@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Controllers\AdController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -24,7 +26,8 @@ Route::controller(CategoryController::class)->prefix('categories')->group(functi
     Route::get('{category}/subcategories', 'getSubcategoriesByCategory');
 });
 
-Route::get('/search' , \App\Http\Controllers\SearchController::class);
+Route::get('/search' , SearchController::class);
+Route::get('/ads' , [AdController::class , 'index']);
 
 
 //Route::controller(UserController::class)->group(function (){
