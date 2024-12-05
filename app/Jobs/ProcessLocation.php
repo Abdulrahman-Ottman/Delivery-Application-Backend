@@ -27,37 +27,47 @@ class ProcessLocation implements ShouldQueue
      */
     public function handle(): void
     {
-        $country = $this->location['country'];
-        $city = $this->location['city'];
+        try {
+            $country = $this->location['country'];
+            $city = $this->location['city'];
 
-        $url = 'https://nominatim.openstreetmap.org/search';
-        $response = Http::withHeaders([
-            'User-Agent' => 'Delivery-Backend-Application/1.0 (aboodoth75@gmail.com)',
-        ])->get('https://nominatim.openstreetmap.org/search', [
-            'q' => $city .','. $country,
-            'format' => 'json',
-            'addressdetails' => 1,
-        ]);
-        $latitude = 0;
-        $longitude = 0;
-        if ($response->successful()) {
-            $response = $response->json();
+            $response = Http::withHeaders([
+                'User-Agent' => 'Delivery-Backend-Application/1.0 (aboodoth75@gmail.com)',
+            ])->get('https://nominatim.openstreetmap.org/search', [
+                'q' => $city . ',' . $country,
+                'format' => 'json',
+                'addressdetails' => 1,
+            ]);
 
-            if (count($response) > 0 && isset($response[0]['lat']) && isset($response[0]['lon'])) {
-                $latitude = $response[0]['lat'];
-                $longitude = $response[0]['lon'];
+            if (!$response->successful()) {
+                throw new \Exception('Failed to fetch coordinates from Nominatim API');
             }
 
+            $responseData = $response->json();
+            if (empty($responseData) || !isset($responseData[0]['lat'], $responseData[0]['lon'])) {
+                throw new \Exception('Invalid response structure from Nominatim API');
+            }
+
+            $latitude = $responseData[0]['lat'];
+            $longitude = $responseData[0]['lon'];
+
+            $user = User::find($this->userId);
+            if (!$user) {
+                throw new \Exception("User with ID {$this->userId} not found");
+            }
+
+            $user->update([
+                'location' => json_encode([
+                    'country' => $country,
+                    'city' => $city,
+                    'address' => $this->location['address'],
+                    'latitude' => $latitude,
+                    'longitude' => $longitude,
+                ]),
+            ]);
+        } catch (\Exception $e) {
+            \Log::error("Job failed: {$e->getMessage()}");
+            throw $e; 
         }
-        $user = User::find($this->userId);
-        $user->update([
-            'location' => json_encode([
-                'country' => $country,
-                'city' => $city,
-                'address' => $this->location['address'],
-                'latitude' => $latitude,
-                'longitude' => $longitude,
-            ]),
-        ]);
     }
 }
