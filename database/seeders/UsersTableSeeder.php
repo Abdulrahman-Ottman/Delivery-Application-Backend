@@ -19,7 +19,7 @@ class UsersTableSeeder extends Seeder
             [
                 'first_name' => 'John',
                 'last_name' => 'Doe',
-                'phone' => '+963999999999',
+                'phone' => '+963999999998',
                 'password' => Hash::make('password'),
                 'location' => json_encode([
                     'city' => 'Damascus',
@@ -31,7 +31,7 @@ class UsersTableSeeder extends Seeder
             [
                 'first_name' => 'Alaa',
                 'last_name' => 'Test',
-                'phone' => '+963999999888',
+                'phone' => '+963999999878',
                 'password' => Hash::make('password'),
                 'location' => json_encode([
                     'city' => 'New York',

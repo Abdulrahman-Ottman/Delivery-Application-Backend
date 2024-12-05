@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\ProcessLocation;
 use App\Models\User;
 use App\Traits\SendsMessages;
 use Carbon\Carbon;
@@ -122,12 +123,14 @@ class AuthController extends Controller
             'phone_verified_at'=>Carbon::now(),
             'first_name'=>$first_name,
             'last_name'=>$last_name,
-            'location'=>$location,
+            'location'=>json_encode($location),
             'image' => $path
         ]);
         Cache::forget($token);
 
         $accessToken = $user->createToken('auth_token')->plainTextToken;
+
+        ProcessLocation::dispatch($user->id, $location);
 
         return response()->json([
             'access_token' => $accessToken,
