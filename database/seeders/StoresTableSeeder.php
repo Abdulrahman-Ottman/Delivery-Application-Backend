@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Store;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -13,15 +14,6 @@ class StoresTableSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('stores')->insert([
-            [
-                'name' => 'Apple Store',
-                'location' => json_encode([
-                    'country' => 'Syria',
-                    'city' => 'Damascus'
-                ]),
-            ],
-
-        ]);
+        Store::factory()->count(20)->create();
     }
 }
