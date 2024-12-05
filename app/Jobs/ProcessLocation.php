@@ -67,7 +67,7 @@ class ProcessLocation implements ShouldQueue
             ]);
         } catch (\Exception $e) {
             \Log::error("Job failed: {$e->getMessage()}");
-            throw $e; 
+            throw $e;
         }
     }
 }

@@ -4,13 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use Illuminate\Http\Request;
+use function PHPUnit\Framework\isEmpty;
 
 class CategoryController extends Controller
 {
     public function getAllCategories(){
-        $categories = null;
+
         $categories = Category::where('parent_id' , null)->get();
-        if ($categories == null) {
+        if ($categories.isEmpty()) {
             return response()->json([
                 'message' => 'No categories found.',
                 'data' => []
