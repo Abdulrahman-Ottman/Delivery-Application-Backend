@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Product extends Model
 {
+
     use HasFactory;
     protected $hidden = ['store_id'];
 
@@ -26,6 +27,8 @@ class Product extends Model
     {
         return $this->hasOne(ProductImage::class)->where('is_main', true);
     }
+
+
     public function categories() : BelongsToMany
     {
         return $this->belongsToMany(Category::class);
