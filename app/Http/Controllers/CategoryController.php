@@ -8,9 +8,9 @@ use Illuminate\Http\Request;
 class CategoryController extends Controller
 {
     public function getAllCategories(){
-        $categories = null;
+
         $categories = Category::where('parent_id' , null)->get();
-        if ($categories == null) {
+        if ($categories->isEmpty()) {
             return response()->json([
                 'message' => 'No categories found.',
                 'data' => []

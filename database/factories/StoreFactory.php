@@ -11,9 +11,12 @@ class StoreFactory extends Factory
 
     public function definition()
     {
+
         return [
             'name' => $this->faker->company,
             'location' => json_encode([
+                'city' => $this->faker->city,
+                'country' => $this->faker->country,
                 'latitude' => $this->faker->latitude,
                 'longitude' => $this->faker->longitude,
             ]),
