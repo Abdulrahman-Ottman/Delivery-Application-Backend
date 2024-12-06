@@ -20,7 +20,7 @@ class AdController extends Controller
                     'next' => $ads->url(1),
                     'prev' => null,
                 ],
-            ], 200);
+            ], 404);
         }
 
         $currentAd = $ads->first();
