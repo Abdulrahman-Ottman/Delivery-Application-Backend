@@ -44,12 +44,29 @@ class AuthController extends Controller
         ],200);
     }
     public function sendCode(Request $request){
+
         $validator = Validator::make($request->all() , [
-            'phone' => ['required',
-                'unique:users,phone',
+            'action' => 'required|in:register,reset_password'
+        ]);
+        if ($validator->fails()){
+            return response()->json([
+                'data' =>$validator->errors()
+            ],400);
+        }
+        $action = $request->input('action');
+
+        $rules = [
+            'phone' => [
+                'required',
                 'regex:/^\+(\d{1,3})[-.\s]?\(?(\d{1,4})\)?[-.\s]?\(?(\d{1,4})\)?[-.\s]?\d{4,10}$/'
             ],
-        ]);
+        ];
+        if ($action === 'register') {
+            $rules['phone'][] = 'unique:users,phone';
+        }
+
+        $validator = Validator::make($request->all(), $rules);
+
         if ($validator->fails()){
             return response()->json([
                 'message' => "Sending failed",
@@ -61,16 +78,33 @@ class AuthController extends Controller
         return response()->json(['message' => 'Code sent successfully'],200);
     }
     public function verify(Request $request){
+
         $validator = Validator::make($request->all() , [
-            'phone' => ['required' ,
-                'unique:users,phone',
-                'regex:/^\+(\d{1,3})[-.\s]?\(?(\d{1,4})\)?[-.\s]?\(?(\d{1,4})\)?[-.\s]?\d{4,10}$/'
-            ],
-            'code'  => ['required','min:4','max:4']
+            'action' => 'required|in:register,reset_password'
         ]);
         if ($validator->fails()){
             return response()->json([
-                'message' => "Verifying failed",
+                'data' =>$validator->errors()
+            ],400);
+        }
+        $action = $request->input('action');
+
+        $rules = [
+            'phone' => [
+                'required',
+                'regex:/^\+(\d{1,3})[-.\s]?\(?(\d{1,4})\)?[-.\s]?\(?(\d{1,4})\)?[-.\s]?\d{4,10}$/'
+            ],
+            'code'  => ['required','min:4','max:4']
+        ];
+        if ($action === 'register') {
+            $rules['phone'][] = 'unique:users,phone';
+        }
+
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()){
+            return response()->json([
+                'message' => "Verification failed",
                 'data' =>$validator->errors()
             ],401);
         }
@@ -109,6 +143,9 @@ class AuthController extends Controller
         if(!Cache::get($token))
             return response()->json (['message' => 'Incorrect token'], 400);
         $phone = base64_decode($token);
+        if(User::where('phone', $phone)->exists())
+            return response()->json (['message' => 'This phone number is already used'], 409);
+
         $password = $request->input('password');
         $first_name = $request->input('first_name');
         $last_name = $request->input('last_name');
@@ -131,6 +168,36 @@ class AuthController extends Controller
         $accessToken = $user->createToken('auth_token')->plainTextToken;
 
         ProcessLocation::dispatch($user->id, $location);
+
+        return response()->json([
+            'access_token' => $accessToken,
+        ] ,200);
+    }
+    public function resetPassword(Request $request){
+        $validator = Validator::make($request->all() , [
+            'token' => 'required',
+            'new_password' => ['required','min:8', 'confirmed'],
+        ]);
+        if ($validator->fails()){
+            return response()->json([
+                'message' => "Password reset failed",
+                'data' =>$validator->errors()
+            ],401);
+        }
+        $token = $request->input('token');
+        if(!Cache::get($token))
+            return response()->json (['message' => 'Incorrect token'], 400);
+        $phone = base64_decode($token);
+        $newPassword=$request->input('new_password');
+        $user = User::where('phone', $phone)->first();
+        if (!$user) {
+            return response()->json(['message' => 'There is no user with this number'], 404);
+        }
+        $user->password = Hash::make($newPassword);
+        $user->save();
+        Cache::forget($token);
+
+        $accessToken = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'access_token' => $accessToken,
