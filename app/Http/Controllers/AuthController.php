@@ -90,10 +90,7 @@ class AuthController extends Controller
         $action = $request->input('action');
 
         $rules = [
-            'phone' => [
-                'required',
-                'regex:/^\+(\d{1,3})[-.\s]?\(?(\d{1,4})\)?[-.\s]?\(?(\d{1,4})\)?[-.\s]?\d{4,10}$/'
-            ],
+            'phone' => ['required'],
             'code'  => ['required','min:4','max:4']
         ];
         if ($action === 'register') {
@@ -112,7 +109,10 @@ class AuthController extends Controller
         $code = $request->input('code');
         if(Cache::get($phone)!=$code)
             return response()->json (['message' => 'Incorrect code'], 400);
-        $token = base64_encode($phone);
+        if($action === 'register')
+            $token = base64_encode('1'.$phone);
+        else
+            $token = base64_encode('2'.$phone);
 
         Cache::forever($token, $phone);
         Cache::forget($phone);
@@ -140,12 +140,11 @@ class AuthController extends Controller
             ],401);
         }
         $token = $request->input('token');
-        if(!Cache::get($token))
+        $decodedToken = base64_decode($token);
+        if($decodedToken[0]!=='1'||(!Cache::get($token)))
             return response()->json (['message' => 'Incorrect token'], 400);
-        $phone = base64_decode($token);
-        if(User::where('phone', $phone)->exists())
-            return response()->json (['message' => 'This phone number is already used'], 409);
 
+        $phone = substr($decodedToken, 1);
         $password = $request->input('password');
         $first_name = $request->input('first_name');
         $last_name = $request->input('last_name');
@@ -185,14 +184,14 @@ class AuthController extends Controller
             ],401);
         }
         $token = $request->input('token');
-        if(!Cache::get($token))
+        $decodedToken = base64_decode($token);
+        if($decodedToken[0]!=='2'||(!Cache::get($token)))
             return response()->json (['message' => 'Incorrect token'], 400);
-        $phone = base64_decode($token);
+        $phone = substr($decodedToken, 1);
         $newPassword=$request->input('new_password');
         $user = User::where('phone', $phone)->first();
-        if (!$user) {
+        if (!$user)
             return response()->json(['message' => 'There is no user with this number'], 404);
-        }
         $user->password = Hash::make($newPassword);
         $user->save();
         Cache::forget($token);
