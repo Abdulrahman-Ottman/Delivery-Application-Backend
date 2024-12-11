@@ -22,6 +22,7 @@ Route::controller(AuthController::class)->group(function (){
     Route::post('/register', 'register');
     Route::post('/login', 'login');
     Route::post('/logout', 'logout')->middleware('auth:sanctum');
+    Route::post('/changePassword', 'changePassword')->middleware('auth:sanctum');
 });
 
 Route::controller(CategoryController::class)->prefix('categories')->group(function () {
