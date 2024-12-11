@@ -74,39 +74,25 @@ class AuthController extends Controller
             ],401);
         }
         $phone = $request->input('phone');
-        $this->sendMessage($phone);
+        $this->sendMessage($phone , $action);
         return response()->json(['message' => 'Code sent successfully'],200);
     }
     public function verify(Request $request){
 
         $validator = Validator::make($request->all() , [
-            'action' => 'required|in:register,reset_password'
+            'phone' => ['required'],
+            'code'  => ['required','min:4','max:4']
         ]);
         if ($validator->fails()){
             return response()->json([
                 'data' =>$validator->errors()
             ],400);
         }
-        $action = $request->input('action');
 
-        $rules = [
-            'phone' => ['required'],
-            'code'  => ['required','min:4','max:4']
-        ];
-        if ($action === 'register') {
-            $rules['phone'][] = 'unique:users,phone';
-        }
-
-        $validator = Validator::make($request->all(), $rules);
-
-        if ($validator->fails()){
-            return response()->json([
-                'message' => "Verification failed",
-                'data' =>$validator->errors()
-            ],401);
-        }
         $phone = $request->input('phone');
         $code = $request->input('code');
+        $action = Cache::get('action'.$code);
+
         if(Cache::get($phone)!=$code)
             return response()->json (['message' => 'Incorrect code'], 400);
         if($action === 'register')
@@ -116,6 +102,7 @@ class AuthController extends Controller
 
         Cache::forever($token, $phone);
         Cache::forget($phone);
+        Cache::forget('action'.$code);
 
         return response()->json([
             'message' => 'Verification successful',
