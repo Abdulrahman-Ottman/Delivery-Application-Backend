@@ -6,10 +6,12 @@ use App\Jobs\ProcessLocation;
 use App\Models\User;
 use App\Traits\SendsMessages;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Testing\Fluent\Concerns\Has;
 
 class AuthController extends Controller
 {
@@ -188,5 +190,47 @@ class AuthController extends Controller
         return response()->json([
             'access_token' => $accessToken,
         ] ,200);
+    }
+
+    public function changePassword(Request $request){
+        $validator = Validator::make($request->all() , [
+            'old_password' => ['required','min:8'],
+            'password' => ['required','min:8', 'confirmed'],
+        ]);
+
+        if ($validator->fails()){
+            return response()->json([
+                'message' => "validation failed",
+                'data' =>$validator->errors()
+            ],401);
+        }
+
+        $user = \Auth::user();
+
+        if (!Hash::check($request->old_password, $user->password)) {
+            return response()->json([
+                'message' => 'old password is incorrect',
+            ], 403);
+        }
+
+        if (Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'message' => 'new password cannot be the same as the old password',
+            ], 400);
+        }
+
+        try {
+            $user->password = Hash::make($request->password);
+            $user->save();
+
+            return response()->json([
+                'message' => 'Password changed successfully',
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Failed to update password',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }
