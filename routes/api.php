@@ -3,10 +3,12 @@
 use App\Http\Controllers\AdController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\MessageController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\UserController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 //Route::get('/user', function (Request $request) {
@@ -17,10 +19,8 @@ Route::controller(AuthController::class)->group(function (){
     Route::post('/sendCode', 'sendCode');
     Route::post('/verify', 'verify');
     Route::post('/register', 'register');
-    Route::post('/resetPassword', 'resetPassword');
     Route::post('/login', 'login');
     Route::post('/logout', 'logout')->middleware('auth:sanctum');
-    Route::post('/changePassword', 'changePassword')->middleware('auth:sanctum');
 });
 
 Route::controller(ProductController::class)->group(function (){
@@ -47,4 +47,8 @@ Route::controller(AdController::class)->group(function (){
 
 });
 
-Route::get('/search' , SearchController::class);
+
+Route::controller(SearchController::class)->group(function (){
+    Route::get('/search', 'search');
+    Route::get('/autoComplete', 'autoComplete');
+});
