@@ -15,17 +15,45 @@ class SearchController extends Controller
     {
         $key = request('key', '');
 
+        $storesQuery = Store::query();
+        $productsQuery = Product::query();
+
         if (!empty($key)) {
-            $stores = Store::where('name', 'LIKE', '%' . $key . '%')->get();
-            $products = Product::select('id', 'name', 'price','store_id')->with(['mainImage:product_id,path','store:id,name'])->where('name', 'LIKE', '%' . $key . '%')->get();
-        } else {
-            $stores = [];
-            $products = [];
+            $storesQuery->where('name', 'LIKE', '%' . $key . '%');
+            $productsQuery->where('name', 'LIKE', '%' . $key . '%');
         }
+
+        if ($country = request('country')) {
+            $storesQuery->where('location->country', $country);
+            $productsQuery->whereHas('store', function ($query) use ($country) {
+                $query->where('location->country', $country);
+            });
+        }
+
+        if ($city = request('city')) {
+            $storesQuery->where('location->city', $city);
+            $productsQuery->whereHas('store', function ($query) use ($city) {
+                $query->where('location->city', $city);
+            });
+        }
+
+        if ($minPrice = request('min_price')) {
+            $productsQuery->where('price', '>=', $minPrice);
+        }
+
+        if ($maxPrice = request('max_price')) {
+            $productsQuery->where('price', '<=', $maxPrice);
+        }
+
+        // excute queries
+        $stores = $storesQuery->get();
+        $products = $productsQuery->select('id', 'name', 'price', 'store_id')
+            ->with(['mainImage:product_id,path', 'store:id,name'])
+            ->get();
 
         return response()->json([
             'products' => $products,
             'stores' => $stores,
-        ],200);
+        ], 200);
     }
 }
