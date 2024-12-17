@@ -4,6 +4,7 @@ namespace App\Traits;
 
 use App\Models\Product;
 use App\Models\Store;
+use Carbon\Carbon;
 
 trait filterProductsAndStores
 {
@@ -54,6 +55,24 @@ trait filterProductsAndStores
         if ($maxPrice = $request->get('max_price')) {
             if ($productsQuery) {
                 $productsQuery->where('price', '<=', $maxPrice);
+            }
+        }
+        if ($categoryName = $request->get('category')) {
+            if ($productsQuery) {
+                $productsQuery->whereHas('categories', function ($query) use ($categoryName) {
+                    $query->where('categories.name', $categoryName);
+                });
+            }
+        }
+        if ($date = $request->get('date')) {
+            if ($productsQuery) {
+                if ($date == 'last-day') {
+                    $productsQuery->whereDate('created_at', '>=', Carbon::yesterday());
+                } elseif ($date == 'last-week') {
+                    $productsQuery->whereDate('created_at', '>=', Carbon::now()->subDays(7));
+                } elseif ($date == 'last-month') {
+                    $productsQuery->whereDate('created_at', '>=', Carbon::now()->subDays(30));
+                }
             }
         }
 
