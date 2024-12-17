@@ -6,7 +6,6 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\StoreController;
-use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 //Route::get('/user', function (Request $request) {
@@ -47,4 +46,8 @@ Route::controller(AdController::class)->group(function (){
 
 });
 
-Route::get('/search' , SearchController::class);
+
+Route::controller(SearchController::class)->group(function (){
+    Route::get('/search', 'search');
+    Route::get('/autoComplete', 'autoComplete');
+});
