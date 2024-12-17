@@ -26,11 +26,11 @@ trait filterProductsAndStores
                 $storesQuery->where('location->country', $country);
             }
 
-            if ($productsQuery) {
-                $productsQuery->whereHas('store', function ($query) use ($country) {
-                    $query->where('location->country', $country);
-                });
-            }
+//            if ($productsQuery) {
+//                $productsQuery->whereHas('store', function ($query) use ($country) {
+//                    $query->where('location->country', $country);
+//                });
+//            }
         }
 
         if ($city = $request->get('city')) {

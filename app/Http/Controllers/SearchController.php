@@ -19,34 +19,34 @@ class SearchController extends Controller
             ], 400);
         }
 
-            $storesQuery = Store::query();
-            $productsQuery = Product::query();
+        $storesQuery = Store::query();
+        $productsQuery = Product::query();
 
-            $filteredData = $this->filterProductsAndStores($request, $productsQuery, $storesQuery);
-            $productsQuery = $filteredData['productsQuery'];
-            $storesQuery = $filteredData['storesQuery'];
+        $filteredData = $this->filterProductsAndStores($request, $productsQuery, $storesQuery);
+        $productsQuery = $filteredData['productsQuery'];
+        $storesQuery = $filteredData['storesQuery'];
 
 
-            $sortBy = $request->get('sort');
-            if($sortBy){
-                $sortedData = $this->sortProductsAndStores($sortBy, $productsQuery, $storesQuery);
-                $productsQuery = $sortedData['productsQuery'];
-                $storesQuery = $sortedData['storesQuery'];
-            }
+        $sortBy = $request->get('sort');
+        if($sortBy){
+            $sortedData = $this->sortProductsAndStores($sortBy, $productsQuery, $storesQuery);
+            $productsQuery = $sortedData['productsQuery'];
+            $storesQuery = $sortedData['storesQuery'];
+        }
 
-            $products = $productsQuery->get();
-            $stores = $storesQuery->get();
+        $products = $productsQuery->get();
+        $stores = $storesQuery->get();
 
-            if ($products->isEmpty() && $stores->isEmpty()) {
-                return response()->json([
-                    'message' => 'No products or stores found.',
-                ], 404);
-            }
-
+        if ($products->isEmpty() && $stores->isEmpty()) {
             return response()->json([
-                'products' => $products,
-                'stores' => $stores,
-            ], 200);
+                'message' => 'No products or stores found.',
+            ], 404);
+        }
+
+        return response()->json([
+            'products' => $products,
+            'stores' => $stores,
+        ], 200);
     }
     public function autoComplete(Request $request)
     {
