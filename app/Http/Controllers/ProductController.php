@@ -3,14 +3,27 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Traits\filterProductsAndStores;
+use App\Traits\sortProductsAndStores;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
-    public function allProducts()
+    use filterProductsAndStores, sortProductsAndStores;
+    public function allProducts(Request $request)
     {
-        $products = Product::select('id', 'name', 'price', 'store_id')->with(['mainImage:product_id,path',
-            'store:id,name'])->paginate(10);
+
+        $productsQuery = Product::select('id', 'name', 'price', 'store_id')
+            ->with(['mainImage:product_id,path', 'store:id,name']);
+
+        $this->filterProductsAndStores($request, $productsQuery, null);
+
+        $sortBy = $request->get('sort');
+        $this->sortProductsAndStores($sortBy, $productsQuery, null);
+
+        $products = $productsQuery->paginate(10);
+
+        $products->appends($request->query());
 
         if ($products->isEmpty()) {
             return response()->json([

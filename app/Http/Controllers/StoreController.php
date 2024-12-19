@@ -3,13 +3,25 @@
 namespace App\Http\Controllers;
 
 use App\Models\Store;
+use App\Traits\filterProductsAndStores;
+use App\Traits\sortProductsAndStores;
 use Illuminate\Http\Request;
 
 class StoreController extends Controller
 {
-    public function allStores()
+    use sortProductsAndStores, filterProductsAndStores;
+    public function allStores(Request $request)
     {
-        $stores = Store::select('id', 'name', 'image')->paginate(10);
+        $storesQuery = Store::select('id', 'name', 'location', 'image');
+
+        $this->filterProductsAndStores($request, null, $storesQuery);
+
+        $sortBy = $request->get('sort');
+        $this->sortProductsAndStores($sortBy, null, $storesQuery);
+
+        $stores = $storesQuery->paginate(10);
+
+        $stores->appends($request->query());
 
         if ($stores->isEmpty()) {
             return response()->json([
