@@ -11,12 +11,18 @@ class ProductsImagesTableSeeder extends Seeder
     /**
      * Run the database seeds.
      */
-    public function run(): void
+    public function run()
     {
-        DB::table('product_images')->insert([
-                'path' => 'C:\Projects\Laravel Projects\laptop.jfif',
-                'is_main' => true,
-                'product_id' => 1,
-            ]);
+        for ($j=1; $j<=100; $j++)
+            for ($i = 1; $i <= random_int(1, 5); $i++) {
+                $path = $i === 1
+                    ? 'http://192.168.1.5:8000/storage/images/products/main-product.png'
+                    : 'http://192.168.1.5:8000/storage/images/products/product.png';
+                DB::table('product_images')->insert([
+                    'path' => $path,
+                    'is_main' => $i === 1,
+                    'product_id' => $j,
+                ]);
+            }
     }
 }
