@@ -16,9 +16,11 @@ use Illuminate\Testing\Fluent\Concerns\Has;
 class AuthController extends Controller
 {
     use SendsMessages;
+
+    //add endpoint for get user info throw token
     public function login(Request $request){
         $validator = Validator::make($request->all() , [
-            'phone' => ['required' ,'regex:/^\+(\d{1,3})[-.\s]?\(?(\d{1,4})\)?[-.\s]?\(?(\d{1,4})\)?[-.\s]?\d{4,10}$/'],
+            'phone' => ['required' ,'regex:^(\+(\d{1,3})[-.\s]?\(?(\d{1,4})\)?[-.\s]{1}\(?(\d{1,4})\)?[-.\s]{1}\d{3,10}){1}$'],
             'password' => ['required' , 'min:8']
         ]);
 

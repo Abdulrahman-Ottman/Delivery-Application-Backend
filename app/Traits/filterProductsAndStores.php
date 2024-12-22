@@ -57,6 +57,8 @@ trait filterProductsAndStores
                 $productsQuery->where('price', '<=', $maxPrice);
             }
         }
+        //add store name filter
+        //
         if ($categoryName = $request->get('category')) {
             if ($productsQuery) {
                 $productsQuery->whereHas('categories', function ($query) use ($categoryName) {

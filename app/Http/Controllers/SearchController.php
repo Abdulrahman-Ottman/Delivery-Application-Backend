@@ -11,6 +11,8 @@ use Illuminate\Http\Request;
 class SearchController extends Controller
 {
     use filterProductsAndStores , sortProductsAndStores;
+
+    //add type filter
     public function search(Request $request)
     {
         if (!$request->has('key') || $request->get('key') == null) {
