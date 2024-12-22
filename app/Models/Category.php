@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Category extends Model
 {
-    //add color column
     public function subcategories() : HasMany
     {
         return $this->hasMany(Category::class, 'parent_id');

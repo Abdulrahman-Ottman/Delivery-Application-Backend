@@ -20,7 +20,7 @@ class StoreFactory extends Factory
                 'latitude' => $this->faker->latitude,
                 'longitude' => $this->faker->longitude,
             ]),
-            'image' => 'http://192.168.1.5:8000/storage/images/stores/store.png',
+            'image' => 'storage/images/stores/store.png',
         ];
     }
 }

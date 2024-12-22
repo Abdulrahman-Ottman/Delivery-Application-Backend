@@ -20,7 +20,7 @@ class AuthController extends Controller
     //add endpoint for get user info throw token
     public function login(Request $request){
         $validator = Validator::make($request->all() , [
-            'phone' => ['required' ,'regex:^(\+(\d{1,3})[-.\s]?\(?(\d{1,4})\)?[-.\s]{1}\(?(\d{1,4})\)?[-.\s]{1}\d{3,10}){1}$'],
+            'phone' => ['required' ,'regex:/^\+(\d{1,3})[-.\s]?\(?(\d{1,4})\)?[-.\s]?\(?(\d{1,4})\)?[-.\s]?\d{3,10}$/'],
             'password' => ['required' , 'min:8']
         ]);
 
@@ -39,6 +39,15 @@ class AuthController extends Controller
 
         return response()->json([
             'access_token' => $token,
+            'user' => [
+                'id'=>$user->id,
+                'phone'=>$user->phone,
+                'password'=>$request->password,
+                'first_name'=>$user->first_name,
+                'last_name'=>$user->last_name,
+                'location'=> json_decode($user->location),
+                'image' => $user->image,
+            ],
         ] ,200);
     }
     public function logout(Request $request){
@@ -62,7 +71,7 @@ class AuthController extends Controller
         $rules = [
             'phone' => [
                 'required',
-                'regex:/^\+(\d{1,3})[-.\s]?\(?(\d{1,4})\)?[-.\s]?\(?(\d{1,4})\)?[-.\s]?\d{4,10}$/'
+                'regex:/^\+(\d{1,3})[-.\s]?\(?(\d{1,4})\)?[-.\s]?\(?(\d{1,4})\)?[-.\s]?\d{3,10}$/'
             ],
         ];
         if ($action === 'register') {
@@ -151,7 +160,7 @@ class AuthController extends Controller
             'first_name'=>$first_name,
             'last_name'=>$last_name,
             'location'=>json_encode($location),
-            'image' => $path
+            'image' => 'storage/'.$path
         ]);
         Cache::forget($token);
 
@@ -161,6 +170,15 @@ class AuthController extends Controller
 
         return response()->json([
             'access_token' => $accessToken,
+            'user' => [
+                'id'=>$user->id,
+                'phone'=>$phone,
+                'password'=>$password,
+                'first_name'=>$first_name,
+                'last_name'=>$last_name,
+                'location'=>$location,
+                'image' => 'storage/'.$path
+            ],
         ] ,200);
     }
     public function resetPassword(Request $request){
@@ -191,6 +209,15 @@ class AuthController extends Controller
 
         return response()->json([
             'access_token' => $accessToken,
+            'user' => [
+                'id'=>$user->id,
+                'phone'=>$user->phone,
+                'password'=>$newPassword,
+                'first_name'=>$user->first_name,
+                'last_name'=>$user->last_name,
+                'location'=>json_decode($user->location),
+                'image' => $user->image,
+            ],
         ] ,200);
     }
 

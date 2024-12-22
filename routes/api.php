@@ -23,13 +23,13 @@ Route::controller(AuthController::class)->group(function (){
 });
 
 Route::controller(ProductController::class)->group(function (){
-    Route::get('/allProducts', 'allProducts');
+    Route::get('/getProducts', 'getProducts');
     Route::get('/latestProducts', 'latestProducts');
     Route::get('/product/{id}', 'product');
 });
 
 Route::controller(StoreController::class)->group(function (){
-    Route::get('/allStores', 'allStores');
+    Route::get('/getStores', 'getStores');
     Route::get('/latestStores', 'latestStores');
     Route::get('/store/{id}', 'store');
 });

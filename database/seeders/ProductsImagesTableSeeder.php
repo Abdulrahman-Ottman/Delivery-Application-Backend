@@ -16,8 +16,8 @@ class ProductsImagesTableSeeder extends Seeder
         for ($j=1; $j<=100; $j++)
             for ($i = 1; $i <= random_int(1, 5); $i++) {
                 $path = $i === 1
-                    ? 'http://192.168.1.5:8000/storage/images/products/main-product.png'
-                    : 'http://192.168.1.5:8000/storage/images/products/product.png';
+                    ? 'storage/images/products/main-product.png'
+                    : 'storage/images/products/product.png';
                 DB::table('product_images')->insert([
                     'path' => $path,
                     'is_main' => $i === 1,

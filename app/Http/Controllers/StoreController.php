@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 class StoreController extends Controller
 {
     use sortProductsAndStores, filterProductsAndStores;
-    public function allStores(Request $request)
+    public function getStores(Request $request)
     {
         $storesQuery = Store::select('id', 'name', 'location', 'image');
 
@@ -46,7 +46,7 @@ class StoreController extends Controller
     }
     public function latestStores()
     {
-        $stores = Store::select('id', 'name', 'image')->latest()->take(10)->get();
+        $stores = Store::select('id', 'name', 'image' ,'location')->latest()->take(10)->get();
 
         if ($stores->isEmpty()) {
             return response()->json([

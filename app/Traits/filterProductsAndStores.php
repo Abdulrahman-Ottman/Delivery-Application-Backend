@@ -2,8 +2,6 @@
 
 namespace App\Traits;
 
-use App\Models\Product;
-use App\Models\Store;
 use Carbon\Carbon;
 
 trait filterProductsAndStores
@@ -34,6 +32,14 @@ trait filterProductsAndStores
             }
         }
 
+        if ($store = $request->get('store')) {
+            if ($productsQuery) {
+                $productsQuery->whereHas('store', function ($query) use ($store) {
+                    $query->where('name', $store);
+                });
+            }
+        }
+
         if ($city = $request->get('city')) {
             if ($storesQuery) {
                 $storesQuery->where('location->city', $city);
@@ -57,8 +63,6 @@ trait filterProductsAndStores
                 $productsQuery->where('price', '<=', $maxPrice);
             }
         }
-        //add store name filter
-        //
         if ($categoryName = $request->get('category')) {
             if ($productsQuery) {
                 $productsQuery->whereHas('categories', function ($query) use ($categoryName) {

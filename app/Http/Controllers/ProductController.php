@@ -10,11 +10,11 @@ use Illuminate\Http\Request;
 class ProductController extends Controller
 {
     use filterProductsAndStores, sortProductsAndStores;
-    public function allProducts(Request $request)
+    public function getProducts(Request $request)
     {
 
         $productsQuery = Product::select('id', 'name', 'price', 'store_id')
-            ->with(['mainImage:product_id,path', 'store:id,name']);
+            ->with(['mainImage:product_id,path', 'store:id,name,location']);
 
         $this->filterProductsAndStores($request, $productsQuery, null);
 
@@ -49,7 +49,7 @@ class ProductController extends Controller
     public function latestProducts()
     {
         $products = Product::select('id', 'name', 'price', 'store_id')->with(['mainImage:product_id,path',
-            'store:id,name'])->latest()->take(10)->get();
+            'store:id,name,location'])->latest()->take(10)->get();
 
         if ($products->isEmpty()) {
             return response()->json([
@@ -79,6 +79,7 @@ class ProductController extends Controller
             'details' => json_decode($product->details),
             'store_id' => $product->store_id,
             'store_name' => $product->store ? $product->store->name : null,
+            'store_location' => $product->store ? json_decode($product->store->location) : null,
             'images' => $product->images->pluck('path'),
             'main_image' => $product->images->firstWhere('is_main', true)->path ?? null,
         ]);
