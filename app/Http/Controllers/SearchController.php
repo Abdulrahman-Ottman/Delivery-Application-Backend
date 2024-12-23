@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Product;
 use App\Models\Store;
 use App\Traits\filterProductsAndStores;
@@ -69,11 +70,37 @@ class SearchController extends Controller
             $products = Product::where('name', 'LIKE', $key . '%')
                 ->limit(5)
                 ->pluck('name');
+            $matchedCategories = Category::where('name', 'LIKE', $key . '%')
+                ->limit(5)
+                ->get();
+            $categories =[];
+            foreach ($matchedCategories as $category) {
+                $parents = [];
+                $current = $category->parentCategory;
+
+                while ($current) {
+                    $parents[] = [
+                        'id' => $current->id,
+                        'name' => $current->name,
+                    ];
+                    $current = $current->parentCategory;
+                }
+
+                $categories[] = [
+                    $category->name => [
+                        'parents' => array_reverse($parents),
+                    ],
+                ];
+            }
+            return response()->json([
+                'products' => $products,
+                'stores' => $stores,
+                'categories' => $categories
+            ], 200);
         }
 
         return response()->json([
-            'products' => $products,
-            'stores' => $stores,
-        ], 200);
+            'message' => 'key query parameter is required',
+        ], 400);
     }
 }
