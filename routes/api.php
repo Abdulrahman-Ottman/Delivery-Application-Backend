@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SearchController;
@@ -17,7 +18,7 @@ Route::controller(AuthController::class)->group(function (){
     Route::post('/verify', 'verify');
     Route::post('/register', 'register');
     Route::post('/resetPassword', 'resetPassword');
-    Route::post('/login', 'login');
+    Route::post('/login', 'login')->name('login');
     Route::post('/logout', 'logout')->middleware('auth:sanctum');
     Route::post('/changePassword', 'changePassword')->middleware('auth:sanctum');
 });
@@ -50,4 +51,8 @@ Route::controller(AdController::class)->group(function (){
 Route::controller(SearchController::class)->group(function (){
     Route::get('/search', 'search');
     Route::get('/autoComplete', 'autoComplete');
+});
+Route::middleware('auth:sanctum')->prefix('user')->group(function () {
+    Route::get('/cart', [CartController::class, 'getUserCart']);
+    Route::post('/cart', [CartController::class, 'addToCart']);
 });
