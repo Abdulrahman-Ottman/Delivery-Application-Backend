@@ -11,10 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('order_status', function (Blueprint $table) {
+        Schema::create('order_product', function (Blueprint $table) {
             $table->id();
-            $table->string('order_number');
-            $table->enum('status', ['in_cart', 'pending', 'rejected', 'accepted' , 'delivered' , 'on_way']);
+            $table->foreignIdFor(\App\Models\Order::class)->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(\App\Models\Product::class)->constrained()->cascadeOnDelete();
+            $table->unsignedInteger('ordered_quantity');
             $table->timestamps();
         });
     }
@@ -24,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('order_status');
+        Schema::dropIfExists('order_product');
     }
 };

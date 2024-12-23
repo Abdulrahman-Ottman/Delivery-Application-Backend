@@ -13,10 +13,8 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(\App\Models\Product::class)->constrained()->cascadeOnDelete();
             $table->foreignIdFor(\App\Models\User::class)->constrained()->cascadeOnDelete();
-            $table->integer('quantity');
-            $table->string('order_number');
+            $table->enum('status' , ['pending' , 'rejected' , 'accepted' , 'on_way' , 'delivered']);
             $table->timestamps();
         });
     }

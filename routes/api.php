@@ -4,6 +4,7 @@ use App\Http\Controllers\AdController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\StoreController;
@@ -55,4 +56,5 @@ Route::controller(SearchController::class)->group(function (){
 Route::middleware('auth:sanctum')->prefix('user')->group(function () {
     Route::get('/cart', [CartController::class, 'getUserCart']);
     Route::post('/cart', [CartController::class, 'addToCart']);
+    Route::post('/cart/make-order', [OrderController::class, 'createOrderFromCart']);
 });
