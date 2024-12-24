@@ -20,12 +20,12 @@ class OrderController extends Controller
             return response()->json(['message' => 'Your cart is empty.'], 400);
         }
 
-        //check each item quntity
+        //check each item quantity
         foreach ($cartItems as $item) {
             if ($item->quantity > $item->product->quantity) {
                 return response()->json([
                     'message' => 'Some items in your cart are out of stock.',
-                    'product' => $item->product->name,
+                    'product' => $item->product,
                 ], 400);
             }
         }
@@ -66,6 +66,22 @@ class OrderController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function getUserOrders(Request $request)
+    {
+        $user = $request->user();
+
+        $orders = $user->orders()->with('products')->get();
+
+        if ($orders->isEmpty()) {
+            return response()->json(['message' => 'No orders found.'], 404);
+        }
+
+        return response()->json([
+            'message' => 'Orders retrieved successfully.',
+            'orders' => $orders,
+        ], 200);
     }
 
 }
