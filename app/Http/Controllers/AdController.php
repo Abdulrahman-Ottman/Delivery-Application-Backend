@@ -45,6 +45,7 @@ class AdController extends Controller
     {
         $validator = Validator::make($request->all(),[
             'image' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            'store_id' => 'required|exists:stores,id'
         ]);
 
         if ($validator->fails()){
@@ -57,6 +58,7 @@ class AdController extends Controller
         $path = $request->file('image')->store('ads', 'public');
         $ad = Ad::create([
             'image' => $path,
+            'store_id' => $request->store_id
         ]);
 
         return response()->json([
