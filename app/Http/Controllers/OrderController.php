@@ -9,5 +9,5 @@ use Str;
 
 class OrderController extends Controller
 {
-   
+
 }
