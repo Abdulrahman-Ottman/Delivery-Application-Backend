@@ -21,18 +21,29 @@ class OrderController extends Controller
         }
 
         //check each item quantity
+        $outOfStockItems = [];
+
         foreach ($cartItems as $item) {
             if ($item->quantity > $item->product->quantity) {
-                return response()->json([
-                    'message' => 'Some items in your cart are out of stock.',
+                $outOfStockItems[] = [
                     'product' => $item->product,
-                ], 400);
+                    'requested_quantity' => $item->quantity,
+                    'available_quantity' => $item->product->quantity,
+                ];
             }
         }
 
-        DB::beginTransaction();
+        if (!empty($outOfStockItems)) {
+            return response()->json([
+                'message' => 'Some items in your cart are out of stock.',
+                'products' => $outOfStockItems,
+            ], 400);
+        }
+
+
 
         try {
+            DB::beginTransaction();
 
             $order = Order::create([
                 'user_id' => $user->id,
