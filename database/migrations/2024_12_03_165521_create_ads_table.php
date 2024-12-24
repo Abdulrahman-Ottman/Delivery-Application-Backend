@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('ads', function (Blueprint $table) {
             $table->id();
             $table->string('image');
+            $table->foreignIdFor(\App\Models\Store::class)->constrained()->cascadeOnDelete();
             $table->timestamps();
         });
     }

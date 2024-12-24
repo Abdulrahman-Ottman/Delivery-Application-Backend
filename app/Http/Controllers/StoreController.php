@@ -44,21 +44,7 @@ class StoreController extends Controller
             'total' => $stores->total(),
         ]);
     }
-    public function latestStores()
-    {
-        $stores = Store::select('id', 'name', 'image' ,'location')->latest()->take(10)->get();
 
-        if ($stores->isEmpty()) {
-            return response()->json([
-                'message' => 'No stores available.',
-            ], 404);
-        }
-
-        return response()->json([
-            'data' => $stores,
-            'total' => count($stores),
-        ]);
-    }
     public function store(Request $request)
     {
         $store = Store::find($request->id);

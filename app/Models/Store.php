@@ -13,4 +13,8 @@ class Store extends Model
     {
         return $this->hasMany(Product::class);
     }
+    public function ads() : HasMany
+    {
+        return $this->hasMany(Ad::class);
+    }
 }

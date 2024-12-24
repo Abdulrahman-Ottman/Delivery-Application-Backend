@@ -46,22 +46,7 @@ class ProductController extends Controller
             'total' => $products->total(),
         ]);
     }
-    public function latestProducts()
-    {
-        $products = Product::select('id', 'name', 'price', 'store_id')->with(['mainImage:product_id,path',
-            'store:id,name,location'])->latest()->take(10)->get();
 
-        if ($products->isEmpty()) {
-            return response()->json([
-                'message' => 'No products available.',
-            ], 404);
-        }
-
-        return response()->json([
-            'data' => $products,
-            'total' => count($products),
-        ]);
-    }
     public function product(Request $request)
     {
         $product = Product::find($request->id);
