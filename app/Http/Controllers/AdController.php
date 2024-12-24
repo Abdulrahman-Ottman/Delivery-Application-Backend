@@ -28,6 +28,7 @@ class AdController extends Controller
         return response()->json([
             'ad' => [
                 'image' => $currentAd['image'],
+                'store_id' => $currentAd['store_id']
             ],
             'pagination' => [
                 'current_page' => $ads->currentPage(),

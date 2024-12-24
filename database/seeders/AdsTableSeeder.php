@@ -14,10 +14,10 @@ class AdsTableSeeder extends Seeder
     public function run(): void
     {
         DB::table('ads')->insert([
-            ['image'=>'C:\Projects\Laravel Projects\laptop.jfif'],
-            ['image'=>'C:\Projects\Laravel Projects\laptop.jfif'],
-            ['image'=>'C:\Projects\Laravel Projects\laptop.jfif'],
-            ['image'=>'C:\Projects\Laravel Projects\laptop.jfif']
+            ['image'=>'C:\Projects\Laravel Projects\laptop.jfif' , 'store_id'=>1],
+            ['image'=>'C:\Projects\Laravel Projects\laptop.jfif' , 'store_id'=>2],
+            ['image'=>'C:\Projects\Laravel Projects\laptop.jfif' , 'store_id'=>3],
+            ['image'=>'C:\Projects\Laravel Projects\laptop.jfif' , 'store_id'=>4]
         ]);
     }
 }

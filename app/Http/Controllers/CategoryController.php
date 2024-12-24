@@ -16,33 +16,32 @@ class CategoryController extends Controller
                 'data' => []
             ], 404);
         }
+        $data = $this->buildCategoryHierarchy($categories);
 
         return response()->json([
             'message' => 'Categories retrieved successfully.',
-            'data' => $categories
+            'data' => $data
         ]);
     }
-    public function getSubcategoriesByCategory($categoryID){
-        $category = Category::where('id',$categoryID)->where('parent_id', null)->first();
 
-        if (!$category) {
-            return response()->json([
-                'message' => 'Category not found.'
-            ], 404);
+    private function buildCategoryHierarchy($categories)
+    {
+        $result = [];
+
+        foreach ($categories as $category) {
+            $result[] = [
+                'id' => $category->id,
+                'name' => $category->name,
+                'color' => $category->color,
+                'parent_id' => $category->parent_id,
+                'image' => $category->image,
+                'created_at' => $category->created_at,
+                'updated_at' => $category->updated_at,
+                'subcategories' => $this->buildCategoryHierarchy($category->subcategories)
+            ];
         }
 
-        $subcategories = $category->subcategories;
-
-        if ($subcategories->isEmpty()) {
-            return response()->json([
-                'message' => 'No subcategories found for this category.',
-                'data' => []
-            ],404);
-        }
-
-        return response()->json([
-            'message' => 'Subcategories retrieved successfully.',
-            'data' => $subcategories
-        ],200);
+        return $result;
     }
+
 }
