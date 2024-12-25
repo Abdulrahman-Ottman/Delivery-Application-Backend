@@ -20,6 +20,7 @@ return new class extends Migration
             $table->json('location');
             $table->string('image')->nullable();
             $table->timestamp('phone_verified_at');
+            $table->foreignIdFor(\App\Models\Role::class);
             $table->rememberToken();
             $table->timestamps();
         });

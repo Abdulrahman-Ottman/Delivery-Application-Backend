@@ -20,7 +20,8 @@ class DatabaseSeeder extends Seeder
             ProductsTableSeeder::class,
             ProductCategoryTableSeeder::class,
             ProductsImagesTableSeeder::class,
-            AdsTableSeeder::class
+            AdsTableSeeder::class,
+            RolesSeeder::class
         ]);
     }
 }
