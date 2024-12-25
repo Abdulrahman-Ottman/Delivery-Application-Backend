@@ -4,6 +4,7 @@ use App\Http\Controllers\AdController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
@@ -62,6 +63,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/cart/make-order', [OrderController::class, 'placeOrder']);
         Route::get('/orders', [OrderController::class, 'getUserOrders']);
         Route::post('/edit-order', [OrderController::class, 'editOrder']);
+        Route::post('/favorites', [FavoriteController::class, 'addFavorite']);
+        Route::get('/favorites', [FavoriteController::class, 'getFavorites']);
 
         Route::get('/notifications', [NotificationController::class, 'index']);
         Route::patch('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
