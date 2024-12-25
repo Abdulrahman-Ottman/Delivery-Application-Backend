@@ -56,5 +56,8 @@ Route::controller(SearchController::class)->group(function (){
 Route::middleware('auth:sanctum')->prefix('user')->group(function () {
     Route::get('/cart', [CartController::class, 'getUserCart']);
     Route::post('/cart', [CartController::class, 'addToCart']);
-    Route::post('/cart/make-order', [OrderController::class, 'createOrderFromCart']);
+    Route::post('/cart/make-order', [OrderController::class, 'placeOrder']);
+
+    Route::get('/orders', [OrderController::class, 'getUserOrders']);
+
 });
