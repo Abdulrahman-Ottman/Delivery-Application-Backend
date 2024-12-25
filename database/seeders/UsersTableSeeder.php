@@ -26,7 +26,8 @@ class UsersTableSeeder extends Seeder
                     'country' => 'Syria',
                     'address' => 'Example Street 123'
                 ]),
-                'phone_verified_at' => Carbon::now()
+                'phone_verified_at' => Carbon::now(),
+                'role_id' => '1'
             ],
             [
                 'first_name' => 'Alaa',
@@ -38,7 +39,23 @@ class UsersTableSeeder extends Seeder
                     'country' => 'USA',
                     'address' => 'Example Street 123'
                 ]),
-                'phone_verified_at' => Carbon::now()
+                'phone_verified_at' => Carbon::now(),
+                'role_id' => '2',
+
+            ],
+            [
+                'first_name' => 'Test',
+                'last_name' => 'Test',
+                'phone' => '+963999999877',
+                'password' => Hash::make('password'),
+                'location' => json_encode([
+                    'city' => 'New York',
+                    'country' => 'USA',
+                    'address' => 'Example Street 123'
+                ]),
+                'phone_verified_at' => Carbon::now(),
+                'role_id' => '3',
+
             ]
         ]);
     }
