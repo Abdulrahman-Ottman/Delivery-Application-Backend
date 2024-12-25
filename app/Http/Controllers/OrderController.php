@@ -149,9 +149,9 @@ class OrderController extends Controller
             foreach ($request->add_products as $productToAdd) {
                 $product = $productsInDB->get($productToAdd['product_id']);
                 if($productToAdd['quantity'] > $product->quantity)
-                    $outOfStock = $product;
+                    $outOfStock[] = $product;
                 if($productsInOrder->has($productToAdd['product_id']))
-                    $inTheOrder = $product;
+                    $inTheOrder[] = $product;
 
             }
             if(!empty($inTheOrder))
@@ -189,13 +189,13 @@ class OrderController extends Controller
             foreach ($request->change_quantity as $product) {
                 $existingProductInOrder = $productsInOrder->get($product['product_id']);
                 if(!$existingProductInOrder){
-                    $notInOrder = $product;
+                    $notInOrder[] = $product;
                     continue;
                 }
                 $existingProductInDB = $productsInDB->get($product['product_id']);
                 $newQuantity = $product['quantity']- $existingProductInOrder->pivot->ordered_quantity;
                 if ($newQuantity > $existingProductInDB->quantity)
-                    $outOfStock = $product;
+                    $outOfStock[] = $product;
             }
             if(!empty($notInOrder))
                 return response()->json([
