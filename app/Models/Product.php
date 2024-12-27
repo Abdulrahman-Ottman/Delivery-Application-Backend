@@ -12,6 +12,8 @@ class Product extends Model
 {
 
     use HasFactory;
+    protected $fillable = ['quantity'];
+
     protected $hidden = ['store_id'];
 
     public function store() : BelongsTo
