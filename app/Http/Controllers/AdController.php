@@ -11,33 +11,19 @@ class AdController extends Controller
 {
     public function index()
     {
-        $ads = Ad::latest()->paginate(1);
+        $ads = Ad::all();
 
         if ($ads->isEmpty()) {
             return response()->json([
-                'message' => 'No Ad available for id : ' . \request('page'),
-                'links' => [
-                    'next' => $ads->url(1),
-                    'prev' => null,
-                ],
+                'message' => 'No Ad available'
             ], 404);
         }
 
         $currentAd = $ads->first();
 
         return response()->json([
-            'ad' => [
-                'image' => $currentAd['image'],
-                'store_id' => $currentAd['store_id']
-            ],
-            'pagination' => [
-                'current_page' => $ads->currentPage(),
-                'total' => $ads->total(),
-                'links' => [
-                    'next' => $ads->nextPageUrl(),
-                    'prev' => $ads->previousPageUrl(),
-                ],
-            ],
+            'data' => $ads,
+
         ], 200);
     }
 
