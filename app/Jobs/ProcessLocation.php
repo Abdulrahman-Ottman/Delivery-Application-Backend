@@ -11,14 +11,14 @@ class ProcessLocation implements ShouldQueue
 {
     use Queueable;
 
-    protected $userId;
+    protected $object;
     protected $location;
     /**
      * Create a new job instance.
      */
-    public function __construct( $userId,  $location)
+    public function __construct( $object,  $location)
     {
-        $this->userId = $userId;
+        $this->object = $object;
         $this->location = $location;
     }
 
@@ -51,16 +51,18 @@ class ProcessLocation implements ShouldQueue
             $latitude = $responseData[0]['lat'];
             $longitude = $responseData[0]['lon'];
 
-            $user = User::find($this->userId);
-            if (!$user) {
-                throw new \Exception("User with ID {$this->userId} not found");
-            }
 
-            $user->update([
+            if (!$this->object) {
+                    throw new \Exception("Object not found");
+            }
+            $address = null;
+            if(array_key_exists('address', $this->location))
+                $address = $this->location['address'];
+            $this->object->update([
                 'location' => json_encode([
                     'country' => $country,
                     'city' => $city,
-                    'address' => $this->location['address'],
+                    'address' => $address,
                     'latitude' => $latitude,
                     'longitude' => $longitude,
                 ]),

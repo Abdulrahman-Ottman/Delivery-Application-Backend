@@ -4,12 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\User;
+use Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class OrderController extends Controller
 {
+    use \App\Traits\CalculatesDistance;
     public function placeOrder(Request $request)
     {
         $user = $request->user();
@@ -20,7 +23,6 @@ class OrderController extends Controller
             return response()->json(['message' => 'Your cart is empty.'], 400);
         }
 
-        //check each item quantity
         $outOfStockItems = [];
 
         foreach ($cartItems as $item) {
@@ -50,13 +52,11 @@ class OrderController extends Controller
                 'status' => 'pending',
             ]);
 
-            //move the product to the order
             foreach ($cartItems as $item) {
                 $order->products()->attach($item->product->id, [
                     'ordered_quantity' => $item->quantity,
                 ]);
 
-                //decrment the product stock quantity
                 $item->product->decrement('quantity', $item->quantity);
             }
 
@@ -69,7 +69,6 @@ class OrderController extends Controller
                 'order' => $order->load('products'),
             ], 201);
         } catch (\Throwable $e) {
-            //undo the changes if any exception accures
             try {
                 DB::rollBack();
             } catch (\Throwable $e) {
@@ -166,11 +165,11 @@ class OrderController extends Controller
                 ], 400);
 
             foreach ($request->add_products as $product) {
-                    $order->products()->attach($product['product_id'], [
-                        'ordered_quantity' => $product['quantity']
-                    ]);
-                    $productInDB = $productsInDB->get($product['product_id']);
-                    $productInDB->decrement('quantity', $product['quantity']);
+                $order->products()->attach($product['product_id'], [
+                    'ordered_quantity' => $product['quantity']
+                ]);
+                $productInDB = $productsInDB->get($product['product_id']);
+                $productInDB->decrement('quantity', $product['quantity']);
             }
         }
 
@@ -240,26 +239,89 @@ class OrderController extends Controller
 
         $order = $user->orders()->with('products')->find($request->order_id);
 
-        if (!$order) {
+        if (!$order && $user->role->name!='superAdmin') {
             return response()->json([
                 'message' => "Order id is not for this user.",
             ], 404);
         }
+        if(!$order)
+            $order = Order::where('id', $request->order_id)->with('products')->first();
 
-        if ($order->status != 'pending') {
+        if ($order->status != 'pending' && $order->status != 'rejected') {
             return response()->json([
-                'message' => "This order cannot be canceled because it is not pending.",
+                'message' => "This order cannot be canceled because it is not pending or rejected.",
             ], 403);
         }
 
         foreach ($order->products as $product) {
             Product::find($product->id)->increment('quantity', $product->pivot->ordered_quantity);
         }
-        $order->products()->detach($order->products->pluck('id'));
-        $order->delete();
+        if ($order->status == 'pending') {
+            $order->products()->detach($order->products->pluck('id'));
+            $order->delete();
+        }
 
         return response()->json([
             'message' => "Order canceled successfully.",
+        ], 200);
+    }
+    public function getPendingOrders()
+    {
+        $pendingOrders = Order::where('status', 'pending')->with(['products', 'products.store:id,name'])->with('user:id,first_name')->get();
+
+        if ($pendingOrders->isEmpty()) {
+            return response()->json(['message' => 'No pending orders found.'], 404);
+        }
+
+        return response()->json([
+            'message' => 'Pending orders retrieved successfully.',
+            'orders' => $pendingOrders,
+        ], 200);
+    }
+    public function changeOrderStatus(Request $request)
+    {
+        $validator = Validator::make($request->all() , [
+            'order_id' => ['required', 'exists:orders,id'],
+            'status' => ['required','in:on_way,rejected'],
+        ]);
+
+        if ($validator->fails()){
+            return response()->json([
+                'message' => "Change status failed",
+                'data' =>$validator->errors()
+            ], 401);
+        }
+        $admin =  Auth::user();
+        if($admin->role->name != 'superAdmin')
+            return response()->json(['message' => "Access denied."], 403);
+
+        $order = Order::where('id', $request->order_id)->with('products')->first();
+
+        if ($order->status != 'pending') {
+            return response()->json([
+                'message' => "This order cannot be edited because it is not pending.",
+            ], 403);
+        }
+
+        $user = User::find($order->user_id);
+        $status = request()->get('status');
+        if($status == 'on_way') {
+            $productsInOrder = $order->products->load(['store:id,location'])->keyBy('id');
+            $userLocation = json_decode($user->location, true);
+            $distance = null;
+            foreach ($productsInOrder as $product) {
+                $storeLocation = json_decode($product->store->location, true);
+                $distance = max($this->CalculateDistance($userLocation, $storeLocation), $distance);
+            }
+            $order->accepted_at = now();
+            $order->distance = $distance;
+        }
+        $order->status = $status;
+        $order->save();
+
+        return response()->json([
+            'message' => "Order status changed successfully!",
+            'order' => $order->load('products'),
         ], 200);
     }
 }

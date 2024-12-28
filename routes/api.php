@@ -26,15 +26,22 @@ Route::controller(AuthController::class)->group(function (){
 });
 
 Route::controller(ProductController::class)->group(function (){
-    Route::get('/getProducts', 'getProducts');
+    Route::get('/getProducts', 'getProducts')
+        ->middleware('auth:sanctum');
     Route::get('/latestProducts', 'latestProducts');
     Route::get('/product/{id}', 'product');
+    Route::post('/addProduct', 'addProduct')
+        ->middleware('auth:sanctum')
+        ->middleware(\App\Http\Middleware\RoleMiddleware::class);
 });
 
 Route::controller(StoreController::class)->group(function (){
-    Route::get('/getStores', 'getStores');
+    Route::get('/getStores', 'getStores')->middleware('auth:sanctum');
     Route::get('/latestStores', 'latestStores');
     Route::get('/store/{id}', 'store');
+    Route::post('/addStore', 'addStore')
+        ->middleware('auth:sanctum')
+        ->middleware(\App\Http\Middleware\RoleMiddleware::class);
 });
 
 Route::controller(CategoryController::class)->prefix('categories')->group(function () {
@@ -60,9 +67,18 @@ Route::middleware('auth:sanctum')->prefix('user')->group(function () {
     Route::post('/cart/make-order', [OrderController::class, 'placeOrder']);
     Route::get('/orders', [OrderController::class, 'getUserOrders']);
     Route::post('/edit-order', [OrderController::class, 'editOrder']);
-    Route::post('/cancel-order', [OrderController::class, 'cancelOrder']);
+    Route::post('/cancel-order', [OrderController::class, 'cancelOrder'])->name('cancel-order');
 
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::patch('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
-    
+
 });
+
+Route::get('/pending-orders', [OrderController::class, 'getPendingOrders'])
+    ->middleware('auth:sanctum')
+    ->middleware(\App\Http\Middleware\RoleMiddleware::class);
+
+Route::post('/change-order-status', [OrderController::class, 'changeOrderStatus'])
+    ->middleware('auth:sanctum')
+    ->middleware(\App\Http\Middleware\RoleMiddleware::class);
+
