@@ -23,6 +23,7 @@ Route::controller(AuthController::class)->group(function (){
     Route::post('/login', 'login')->name('login');
     Route::post('/logout', 'logout')->middleware('auth:sanctum');
     Route::post('/changePassword', 'changePassword')->middleware('auth:sanctum');
+    Route::post('/updateUserInfo', 'updateUserInfo')->middleware('auth:sanctum');
 });
 
 Route::controller(ProductController::class)->group(function (){
