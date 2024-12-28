@@ -28,7 +28,7 @@ class AuthController extends Controller
             return response()->json([
                 'message' => "login failed",
                 'data' =>$validator->errors()
-            ],401 );
+            ],401);
         }
         $user = User::where('phone', $request->phone)->first();
         if (!$user || !Hash::check($request->password, $user->password)) {
@@ -37,12 +37,18 @@ class AuthController extends Controller
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
+        $store_id = null;
+        if($user->store)
+            $store_id = $user->store->id;
+
         return response()->json([
             'access_token' => $token,
             'user' => [
                 'id'=>$user->id,
                 'phone'=>$user->phone,
                 'password'=>$request->password,
+                'role' => $user->role->name,
+                'store_id' => $store_id,
                 'first_name'=>$user->first_name,
                 'last_name'=>$user->last_name,
                 'location'=> json_decode($user->location),
@@ -156,17 +162,18 @@ class AuthController extends Controller
         $user=User::create([
             'phone'=>$phone,
             'password'=>Hash::make($password),
+            'role_id' => '3',
             'phone_verified_at'=>Carbon::now(),
             'first_name'=>$first_name,
             'last_name'=>$last_name,
             'location'=>json_encode($location),
-            'image' => 'storage/'.$path
+            'image' => 'storage/'.str_replace("public/", "", $path)
         ]);
         Cache::forget($token);
 
         $accessToken = $user->createToken('auth_token')->plainTextToken;
 
-        ProcessLocation::dispatch($user->id, $location);
+        ProcessLocation::dispatch($user, $location);
 
         return response()->json([
             'access_token' => $accessToken,
@@ -174,6 +181,7 @@ class AuthController extends Controller
                 'id'=>$user->id,
                 'phone'=>$phone,
                 'password'=>$password,
+                'role' => $user->role->name,
                 'first_name'=>$first_name,
                 'last_name'=>$last_name,
                 'location'=>$location,
@@ -213,6 +221,7 @@ class AuthController extends Controller
                 'id'=>$user->id,
                 'phone'=>$user->phone,
                 'password'=>$newPassword,
+                'role' => $user->role->name,
                 'first_name'=>$user->first_name,
                 'last_name'=>$user->last_name,
                 'location'=>json_decode($user->location),

@@ -9,6 +9,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Store extends Model
 {
+    protected $fillable = [
+        'name',
+        'location',
+    ];
     use HasFactory;
     public function products() : HasMany
     {
