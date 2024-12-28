@@ -40,7 +40,7 @@
         <div class="col-md-6">
             <input type="text" class="form-control" id="searchBar" placeholder="Search stores...">
         </div>
-        <div class="col-md-3 text-end d-flex justify-content-end gap-2">
+        <div class="col-md-4 text-end d-flex justify-content-end gap-3">
             <button class="btn btn-success btn-wide" data-bs-toggle="modal" data-bs-target="#addStoreModal">Add Store</button>
             <button class="btn btn-warning btn-wide" id="pendingOrdersButton" style="color:white">View Pending Orders</button>
             <button class="btn btn-danger btn-wide" id="logoutButton">Logout</button>
