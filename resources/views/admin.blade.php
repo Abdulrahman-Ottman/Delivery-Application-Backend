@@ -41,7 +41,7 @@
         <div class="col-md-6">
             <input type="text" class="form-control" id="searchBar" placeholder="Search products...">
         </div>
-        <div class="col-md-3 text-end">
+        <div class="col-md-3 text-end d-flex justify-content-end gap-3">
             <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addProductModal">Add Product</button>
             <button class="btn btn-danger" id="logoutButton">Logout</button>
         </div>

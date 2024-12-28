@@ -160,7 +160,7 @@ class OrderController extends Controller
                 ], 409);
             if(!empty($outOfStock))
                 return response()->json([
-                    'message' => "Some quantities are out of Stock.",
+                    'message' => "Failed to add products some quantities are out of Stock.",
                     'Out of Stock' => $outOfStock
                 ], 400);
 
@@ -203,7 +203,7 @@ class OrderController extends Controller
                 ], 404);
             if(!empty($outOfStock))
                 return response()->json([
-                    'message' => "Some quantities are out of Stock",
+                    'message' => "Failed to change quantities some quantities are out of Stock",
                     'Out of Stock' => $outOfStock
                 ], 400);
 
@@ -242,7 +242,7 @@ class OrderController extends Controller
         if (!$order && $user->role->name!='superAdmin') {
             return response()->json([
                 'message' => "Order id is not for this user.",
-            ], 404);
+            ], 403);
         }
         if(!$order)
             $order = Order::where('id', $request->order_id)->with('products')->first();
