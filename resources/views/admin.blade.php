@@ -36,13 +36,27 @@
 </head>
 
 <body>
+
 <div class="container mt-5">
     <div class="row justify-content-between">
         <div class="col-md-6">
             <input type="text" class="form-control" id="searchBar" placeholder="Search products...">
         </div>
-        <div class="col-md-3 text-end d-flex justify-content-end gap-3">
-            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addProductModal">Add Product</button>
+        <div class="col-md-3 text-end d-flex justify-content-end gap-3" id="buttonContainer">
+            <script>
+                const role = JSON.parse(localStorage.getItem('user'))['role'];
+                if (role === 'admin') {
+                    // Create the Add Product button
+                    const addProductButton = document.createElement('button');
+                    addProductButton.className = 'btn btn-success';
+                    addProductButton.setAttribute('data-bs-toggle', 'modal');
+                    addProductButton.setAttribute('data-bs-target', '#addProductModal');
+                    addProductButton.textContent = 'Add Product';
+
+                    // Append the button to the buttonContainer
+                    document.getElementById('buttonContainer').appendChild(addProductButton);
+                }
+            </script>
             <button class="btn btn-danger" id="logoutButton">Logout</button>
         </div>
     </div>
@@ -99,7 +113,6 @@
         </div>
     </div>
 </div>
-
 {{--<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>--}}
 <script src="{{url('bootstrap.bundle.min.js')}}"></script>
 <script>
@@ -107,8 +120,11 @@
     const details = [];
     const details2 = [];
     const accessToken = localStorage.getItem('access_token');
-    const role = JSON.parse(localStorage.getItem('user'))['role'];
-    if (!accessToken || (role !='superAdmin' && role !='admin')){
+    if (!accessToken){
+        localStorage.clear();
+        window.location.href = url;
+    }
+    if (role !='superAdmin' && role !='admin'){
         localStorage.clear();
         window.location.href = url;
     }
@@ -258,7 +274,6 @@
                     'X-CSRF-TOKEN': csrfToken,
                     'Accept': 'application/json',
                     'Authorization': `Bearer ${accessToken}`,
-                    'role': `YWRtaW4=`
                 },
                 body: formData,
             });

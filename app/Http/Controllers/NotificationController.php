@@ -9,18 +9,17 @@ class NotificationController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $notifications = $user->notifications;
-        $unreadNotifications = $user->unreadNotifications;
-
-        if ($notifications->isNotEmpty()) {
+        $unreadNotifications = $user->unreadNotifications->select('id', 'data', 'read_at', 'created_at');
+        $readNotifications = $user->readNotifications->select('id', 'data', 'read_at', 'created_at');
+        if ($readNotifications->isNotEmpty() || $unreadNotifications->isNotEmpty()) {
             return response()->json([
-                'notifications' => $notifications,
+                'readNotifications' => $readNotifications,
                 'unread_notifications' => $unreadNotifications,
             ],200);
         }
 
         return response()->json([
-            'message' => 'no available notifications'
+            'message' => 'No available notifications'
         ] , 200);
     }
 

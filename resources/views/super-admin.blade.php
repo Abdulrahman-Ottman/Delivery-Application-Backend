@@ -95,8 +95,12 @@
 <script>
     const url = 'http://192.168.9.54:8000';
     const accessToken = localStorage.getItem('access_token');
+    if (!accessToken){
+        localStorage.clear();
+        window.location.href = url;
+    }
     const role = JSON.parse(localStorage.getItem('user'))['role'];
-    if (!accessToken || role !='superAdmin'){
+    if (role !='superAdmin'){
         localStorage.clear();
         window.location.href = url;
     }
@@ -138,13 +142,12 @@
         'Slovakia': ['Bratislava', 'Košice', 'Prešov', 'Nitra', 'Trnava'],
         'Croatia': ['Zagreb', 'Split', 'Rijeka', 'Osijek', 'Zadar'],
         'Slovenia': ['Ljubljana', 'Maribor', 'Celje', 'Kranj', 'Novo mesto'],
-        'Israel': ['Jerusalem', 'Tel Aviv', 'Haifa', 'Rishon LeZion', 'Petah Tikva'],
         'Malaysia': ['Kuala Lumpur', 'George Town', 'Johor Bahru', 'Malacca', 'Ipoh'],
         'Thailand': ['Bangkok', 'Chiang Mai', 'Phuket', 'Pattaya', 'Nakhon Ratchasima'],
         'Indonesia': ['Jakarta', 'Surabaya', 'Bandung', 'Medan', 'Bali'],
         'Philippines': ['Manila', 'Cebu City', 'Davao City', 'Quezon City', 'Zamboanga City'],
         'Vietnam': ['Hanoi', 'Ho Chi Minh City', 'Da Nang', 'Hai Phong', 'Nha Trang'],
-        'Syria': ['Damascus', 'Aleppo', 'Homs', 'Latakia', 'Tartus'],
+        'Syria': ['Damascus', 'Aleppo', 'Homes', 'Latakia', 'Tartus'],
         'Pakistan': ['Karachi', 'Lahore', 'Islamabad', 'Faisalabad', 'Rawalpindi'],
         'Bangladesh': ['Dhaka', 'Chittagong', 'Khulna', 'Rajshahi', 'Sylhet'],
         'Nepal': ['Kathmandu', 'Pokhara', 'Lalitpur', 'Bhaktapur', 'Biratnagar'],
@@ -177,7 +180,6 @@
                 headers: {
                     'Authorization': `Bearer ${accessToken}`,
                     'Accept': 'application/json',
-                    'role': `c3VwZXJBZG1pbg==`
                 }
             });
             if(response.status === 404)
@@ -260,36 +262,43 @@
     });
     async function changeOrderStatus(orderId, status) {
         try {
-            const response = await fetch(`${url}/api/change-order-status`, {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${accessToken}`,
-                    'role': `c3VwZXJBZG1pbg==`,
-                },
-                body: JSON.stringify({ order_id: orderId, status: status }),
-            });
-
-            if (response.ok) {
-                if(status=='rejected') {
-                   await fetch(`${url}/api/user/cancel-order`, {
-                        method: 'POST',
-                        headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${accessToken}`,
-                            'role': `c3VwZXJBZG1pbg==`,
-                        },
-                        body: JSON.stringify({ order_id: orderId}),
-                   });
+            if(status=='on_way'){
+                const response = await fetch(`${url}/api/accept-order`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${accessToken}`,
+                    },
+                    body: JSON.stringify({ order_id: orderId}),
+                });
+                if (response.ok) {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('pendingOrdersModal'));
+                    modal.hide();
+                    document.getElementById('pendingOrdersButton').click();
+                } else {
+                    console.error('Error changing order status:', response.statusText);
+                    alert('Failed to change order status.');
                 }
-                const modal = bootstrap.Modal.getInstance(document.getElementById('pendingOrdersModal'));
-                modal.hide();
-                document.getElementById('pendingOrdersButton').click();
-            } else {
-                console.error('Error changing order status:', response.statusText);
-                alert('Failed to change order status.');
+            }
+            else if(status=='rejected'){
+                const response = await fetch(`${url}/api/cancel-order`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${accessToken}`,
+                    },
+                    body: JSON.stringify({ order_id: orderId}),
+                });
+                if (response.ok) {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('pendingOrdersModal'));
+                    modal.hide();
+                    document.getElementById('pendingOrdersButton').click();
+                } else {
+                    console.error('Error changing order status:', response.statusText);
+                    alert('Failed to change order status.');
+                }
             }
         } catch (error) {
             console.error('Error:', error);
@@ -377,7 +386,6 @@
                     'X-CSRF-TOKEN': csrfToken,
                     'Accept': 'application/json',
                     'Authorization': `Bearer ${accessToken}`,
-                    'role': 'c3VwZXJBZG1pbg==',
                 },
                 body: formData
             });
