@@ -177,6 +177,7 @@
                     } else if (userRole == 'superAdmin') {
                         window.location.href = `${url}/super_admin/dashboard`;
                     } else {
+                        localStorage.clear();
                         alert('Role not recognized, please contact support.');
                     }
                 } else {

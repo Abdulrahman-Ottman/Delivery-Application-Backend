@@ -13,20 +13,11 @@ class RoleMiddleware
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next, $role): Response
     {
-        $store_id = $request->header('store_id');
-        $role = base64_decode($request->header('role'));
-        if($role!='admin' && $role!='superAdmin')
-            return response()->json(['message' => 'Access Denied.'], 403);
-
-        if (!$request->user() || ($request->user()->role->name=='admin' && 'admin'!= $role)) {
+        if (!$request->user() || !($request->user()->role->name==$role)) {
             return response()->json(['message' => 'Access Denied.'], 403);
         }
-
-        if($request->user()->role->name == 'admin')
-            if(!($request->user()->store()->pluck('id') == $store_id))
-                return response()->json(['message' => 'Access Denied.'], 440);
 
         return $next($request);
     }

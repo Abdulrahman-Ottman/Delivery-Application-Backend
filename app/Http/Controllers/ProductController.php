@@ -91,8 +91,9 @@ class ProductController extends Controller
             ], 401);
         }
         $store_id = $request->get('store_id');
-        if(auth()->user()->store->id != $store_id && auth()->user()->role->name=='admin')
-            return response()->json(['message' => 'Access Denied.'], 403);
+
+        if(auth()->user()->store->id != $store_id)
+            return response()->json(['message' => 'Access Denied.'], 440);
 
         $product = new Product();
         $product->name = $request->get('name');

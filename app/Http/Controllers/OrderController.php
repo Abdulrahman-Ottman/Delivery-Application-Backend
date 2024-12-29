@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
+use App\Notifications\OrderStatusChangedNotification;
 use Auth;
+use App\Jobs\UpdateOrderStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -223,6 +225,7 @@ class OrderController extends Controller
         ],200);
     }
     public function cancelOrder(Request $request)
+
     {
         $validator = Validator::make($request->all() , [
             'order_id' => ['required', 'exists:orders,id'],
@@ -230,37 +233,41 @@ class OrderController extends Controller
 
         if ($validator->fails()){
             return response()->json([
-                'message' => "Delete failed",
+                'message' => "Cancel failed!",
                 'data' =>$validator->errors()
             ], 401);
         }
 
         $user = $request->user();
 
-        $order = $user->orders()->with('products')->find($request->order_id);
-
-        if (!$order && $user->role->name!='superAdmin') {
+        if($user->role->name == 'superAdmin')
+             $order = Order::where('id', $request->order_id)->with('products')->first();
+        else
+            $order = $user->orders()->with('products')->find($request->order_id);
+        if (!$order)
             return response()->json([
-                'message' => "Order id is not for this user.",
+                'message' => "Order not found.",
             ], 403);
-        }
-        if(!$order)
-            $order = Order::where('id', $request->order_id)->with('products')->first();
 
-        if ($order->status != 'pending' && $order->status != 'rejected') {
+        if ($order->status != 'pending') {
             return response()->json([
-                'message' => "This order cannot be canceled because it is not pending or rejected.",
+                'message' => "This order cannot be canceled because it is not pending.",
             ], 403);
         }
 
         foreach ($order->products as $product) {
             Product::find($product->id)->increment('quantity', $product->pivot->ordered_quantity);
         }
-        if ($order->status == 'pending') {
+        if ($user->role->name == 'user') {
             $order->products()->detach($order->products->pluck('id'));
             $order->delete();
+            $order->user->notify(new OrderStatusChangedNotification($order->id , 'pending' , 'cancelled'));
         }
-
+        else {
+            $order->status = 'rejected';
+            $order->save();
+            $order->user->notify(new OrderStatusChangedNotification($order->id , 'pending' , 'rejected'));
+        }
         return response()->json([
             'message' => "Order canceled successfully.",
         ], 200);
@@ -278,22 +285,18 @@ class OrderController extends Controller
             'orders' => $pendingOrders,
         ], 200);
     }
-    public function changeOrderStatus(Request $request)
+    public function acceptOrder(Request $request)
     {
         $validator = Validator::make($request->all() , [
             'order_id' => ['required', 'exists:orders,id'],
-            'status' => ['required','in:on_way,rejected'],
         ]);
 
         if ($validator->fails()){
             return response()->json([
-                'message' => "Change status failed",
+                'message' => "Accept failed!",
                 'data' =>$validator->errors()
             ], 401);
         }
-        $admin =  Auth::user();
-        if($admin->role->name != 'superAdmin')
-            return response()->json(['message' => "Access denied."], 403);
 
         $order = Order::where('id', $request->order_id)->with('products')->first();
 
@@ -304,24 +307,22 @@ class OrderController extends Controller
         }
 
         $user = User::find($order->user_id);
-        $status = request()->get('status');
-        if($status == 'on_way') {
-            $productsInOrder = $order->products->load(['store:id,location'])->keyBy('id');
-            $userLocation = json_decode($user->location, true);
-            $distance = null;
-            foreach ($productsInOrder as $product) {
-                $storeLocation = json_decode($product->store->location, true);
-                $distance = max($this->CalculateDistance($userLocation, $storeLocation), $distance);
-            }
-            $order->accepted_at = now();
-            $order->distance = $distance;
+        $productsInOrder = $order->products->load(['store:id,location'])->keyBy('id');
+        $userLocation = json_decode($user->location, true);
+        $distance = 0;
+        foreach ($productsInOrder as $product) {
+            $storeLocation = json_decode($product->store->location, true);
+            $distance = max($this->CalculateDistance($userLocation, $storeLocation), $distance);
         }
-        $order->status = $status;
+        $order->accepted_at = now();
+        $order->distance = $distance;
+        $order->status = 'on_way';
         $order->save();
+        $order->user->notify(new OrderStatusChangedNotification($order->id , 'pending' , 'on_way'));
+        UpdateOrderStatus::dispatch($order->id)->delay(now()->addMinutes($distance));
 
         return response()->json([
-            'message' => "Order status changed successfully!",
-            'order' => $order->load('products'),
+            'message' => "Order accepted successfully!",
         ], 200);
     }
 }
