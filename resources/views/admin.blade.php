@@ -32,6 +32,16 @@
             transform: translateY(-5px);
             transition: all 0.3s ease;
         }
+        .productDetailsModal img {
+            max-height: 300px;
+            object-fit: cover;
+        }
+
+        .additionalImages img {
+            max-width: 100px;
+            max-height: 100px;
+            object-fit: cover;
+        }
     </style>
 </head>
 
@@ -46,14 +56,12 @@
             <script>
                 const role = JSON.parse(localStorage.getItem('user'))['role'];
                 if (role === 'admin') {
-                    // Create the Add Product button
                     const addProductButton = document.createElement('button');
                     addProductButton.className = 'btn btn-success';
                     addProductButton.setAttribute('data-bs-toggle', 'modal');
                     addProductButton.setAttribute('data-bs-target', '#addProductModal');
                     addProductButton.textContent = 'Add Product';
 
-                    // Append the button to the buttonContainer
                     document.getElementById('buttonContainer').appendChild(addProductButton);
                 }
             </script>
@@ -113,6 +121,32 @@
         </div>
     </div>
 </div>
+<div class="modal fade" id="productDetailsModal" tabindex="-1" aria-labelledby="productDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="productDetailsModalLabel">Product Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <img id="productMainImage" src="" alt="Product Image" class="img-fluid rounded">
+                    </div>
+                    <div class="col-md-8">
+                        <p><strong>Description:</strong>  <span id="productDescription2" ></span></p>
+                        <p><strong>Price:</strong> <span id="productPrice2" style="color: green"></span><span style="color: green">$</span></p>
+                        <p><strong>Quantity:</strong> <span id="productQuantity2"></span></p>
+                        <p><strong>Store:</strong> <span id="productStore"></span></p>
+                        <p><strong>Details:</strong></p>
+                        <ul id="productDetailsList"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 {{--<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>--}}
 <script src="{{url('bootstrap.bundle.min.js')}}"></script>
 <script>
@@ -159,21 +193,25 @@
                 const productCard = document.createElement('div');
                 productCard.className = 'col-md-4 mb-4';
                 productCard.innerHTML = `
-                <div class="card product-card">
-                    <img src="${url}/${product.image}" alt="${product.name}">
-                    <div class="card-body">
-                        <h5 class="card-title">${product.name}</h5>
-                        <h5 class="card-title">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span style="color: green">${product.price}$</span>
-                                <span>Quantity: ${product.quantity}</span>
-                            </div>
-                        </h5>
-                    </div>
-                </div>
-            `;
+      <div class="card product-card">
+    <img src="${url}/${product.image}" alt="${product.name}">
+    <div class="card-body d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">${product.name}</h5>
+        <button class="btn btn-outline-primary view-details-button" data-product-id="${product.id}">View Details</button>
+    </div>
+</div>
+
+    `;
                 productsGrid.appendChild(productCard);
             });
+
+            document.querySelectorAll('.view-details-button').forEach(button => {
+                button.addEventListener('click', async function () {
+                    const productId = this.getAttribute('data-product-id');
+                    await showProductDetails(productId);
+                });
+            });
+
 
         } catch (error) {
             console.error('Error fetching products:', error);
@@ -208,6 +246,42 @@
             alert('Please enter both key and value.');
         }
     });
+    async function showProductDetails(productId) {
+        try {
+            const response = await fetch(`${url}/api/product/${productId}`, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            });
+
+            if (!response.ok) {
+                console.error('Failed to fetch product details:', response.statusText);
+                return;
+            }
+
+            const product = await response.json();
+            console.log(product.main_image);
+            document.getElementById('productDetailsModalLabel').textContent = product.name;
+            document.getElementById('productMainImage').src = `${url}/${product.main_image}`;
+            document.getElementById('productDescription2').textContent = product.description;
+            document.getElementById('productPrice2').textContent = product.price;
+            document.getElementById('productQuantity2').textContent = product.quantity;
+            document.getElementById('productStore').textContent = product.store_name;
+
+            const detailsList = document.getElementById('productDetailsList');
+            detailsList.innerHTML = '';
+            Object.entries(product.details).forEach(([key, value]) => {
+                const li = document.createElement('li');
+                li.textContent = `${key}: ${value}`;
+                detailsList.appendChild(li);
+            });
+
+            const modal = new bootstrap.Modal(document.getElementById('productDetailsModal'));
+            modal.show();
+        } catch (error) {
+            console.error('Error fetching product details:', error);
+        }
+    }
 
     function updateDetailsList() {
         const detailsList = document.getElementById('detailsList');
