@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\ProductImage;
 use App\Traits\filterProductsAndStores;
 use App\Traits\sortProductsAndStores;
 use Illuminate\Http\Request;
+use Validator;
 
 class ProductController extends Controller
 {
@@ -13,7 +15,7 @@ class ProductController extends Controller
     public function getProducts(Request $request)
     {
 
-        $productsQuery = Product::select('id', 'name', 'price', 'store_id')
+        $productsQuery = Product::select('id', 'name', 'price', 'store_id','quantity')
             ->with(['mainImage:product_id,path', 'store:id,name,location']);
 
         $this->filterProductsAndStores($request, $productsQuery, null);
@@ -68,5 +70,61 @@ class ProductController extends Controller
             'images' => $product->images->pluck('path'),
             'main_image' => $product->images->firstWhere('is_main', true)->path ?? null,
         ]);
+    }
+    public function addProduct(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'store_id' => 'required|exists:stores,id',
+            'name' => 'required|string|max:255',
+            'price' => 'required|numeric|min:0',
+            'quantity' => 'required|integer|min:1',
+            'description' => 'required|string',
+            'details' => 'array',
+            'main_image' => 'image|mimes:jpg,jpeg,png|max:2048',
+            'additional_images.*' => 'image|mimes:jpg,jpeg,png|max:2048'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Adding failed',
+                'data' => $validator->errors()
+            ], 401);
+        }
+        $store_id = $request->get('store_id');
+
+        if(auth()->user()->store->id != $store_id)
+            return response()->json(['message' => 'Access Denied.'], 440);
+
+        $product = new Product();
+        $product->name = $request->get('name');
+        $product->price = $request->get('price');
+        $product->quantity = $request->get('quantity');
+        $product->description = $request->get('description');
+        $details = $request->input('details');
+        $product->details = str_replace(['[', ']'], '', json_encode($details));
+        $product->store_id = $request->get('store_id');
+        $product->save();
+        if ($request->hasFile('main_image')) {
+            $mainImagePath = $request->file('main_image')->store('images/products', 'public');
+            ProductImage::create([
+                'path' => 'storage/' . str_replace('public/', '', $mainImagePath),
+                'product_id' => $product->id,
+                'is_main' => true,
+            ]);
+
+        }
+
+        if ($request->hasFile('additional_images')) {
+            foreach ($request->file('additional_images') as $image) {
+                $additionalImagePath = $image->store('images/products', 'public');
+                ProductImage::create([
+                    'path' => 'storage/' . str_replace('public/', '', $additionalImagePath),
+                    'product_id' => $product->id,
+                    'is_main' => false,
+                ]);
+            }
+        }
+
+        return response()->json(['message' => 'Product added successfully!', 'product' => $product], 201);
     }
 }

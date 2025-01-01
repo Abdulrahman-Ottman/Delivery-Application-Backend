@@ -21,6 +21,7 @@ class StoreFactory extends Factory
                 'longitude' => $this->faker->longitude,
             ]),
             'image' => 'storage/images/stores/store.png',
+            'user_id' => 1,
         ];
     }
 }

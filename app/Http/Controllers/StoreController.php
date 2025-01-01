@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\ProcessLocation;
 use App\Models\Store;
+use App\Models\User;
 use App\Traits\filterProductsAndStores;
 use App\Traits\sortProductsAndStores;
 use Illuminate\Http\Request;
+use Validator;
 
 class StoreController extends Controller
 {
@@ -58,6 +61,7 @@ class StoreController extends Controller
                 'id' => $product->id,
                 'name' => $product->name,
                 'price' => $product->price,
+                'quantity' => $product->quantity,
                 'image' => $product->images->isNotEmpty() ? $product->images->first()->path : null,
             ];
         });
@@ -68,5 +72,38 @@ class StoreController extends Controller
             'image' => $store->image,
             'products' => $products,
         ]);
+    }
+    public function addStore(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required|exists:users,id',
+            'name' => 'required|string|max:255',
+            'image' => 'image|mimes:jpg,jpeg,png|max:2048',
+            'location' => 'required|json',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Adding failed.',
+                'data' => $validator->errors()
+            ], 401);
+        }
+        $admin = User::find($request->get('user_id'));
+        if($admin->role->name != 'admin'||$admin->store){
+            return response()->json(['message' => 'Incorrect admin id.'], 422);
+        }
+        $store = new Store();
+        $store->name = $request->get('name');
+        $store->user_id = $request->get('user_id');
+        $store->location = $request->input('location');
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('images/stores', 'public');
+        }
+        $store->image = 'storage/' . str_replace('public/', '', $path) ?? null;
+        $store->save();
+
+        ProcessLocation::dispatch($store, json_decode($request->input('location'), true));
+
+        return response()->json(['message' => 'Store added successfully!', 'store' => $store], 201);
     }
 }

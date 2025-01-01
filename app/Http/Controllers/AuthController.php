@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Jobs\ProcessLocation;
 use App\Models\User;
 use App\Traits\SendsMessages;
+use Auth;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -28,7 +29,7 @@ class AuthController extends Controller
             return response()->json([
                 'message' => "login failed",
                 'data' =>$validator->errors()
-            ],401 );
+            ],401);
         }
         $user = User::where('phone', $request->phone)->first();
         if (!$user || !Hash::check($request->password, $user->password)) {
@@ -37,12 +38,17 @@ class AuthController extends Controller
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
+        $store_id = null;
+        if($user->store)
+            $store_id = $user->store->id;
+
         return response()->json([
             'access_token' => $token,
             'user' => [
                 'id'=>$user->id,
                 'phone'=>$user->phone,
-                'password'=>$request->password,
+                'role' => $user->role->name,
+                'store_id' => $store_id,
                 'first_name'=>$user->first_name,
                 'last_name'=>$user->last_name,
                 'location'=> json_decode($user->location),
@@ -156,24 +162,25 @@ class AuthController extends Controller
         $user=User::create([
             'phone'=>$phone,
             'password'=>Hash::make($password),
+            'role_id' => '3',
             'phone_verified_at'=>Carbon::now(),
             'first_name'=>$first_name,
             'last_name'=>$last_name,
             'location'=>json_encode($location),
-            'image' => 'storage/'.$path
+            'image' => 'storage/'.str_replace("public/", "", $path)
         ]);
         Cache::forget($token);
 
         $accessToken = $user->createToken('auth_token')->plainTextToken;
 
-        ProcessLocation::dispatch($user->id, $location);
+        ProcessLocation::dispatch($user, $location);
 
         return response()->json([
             'access_token' => $accessToken,
             'user' => [
                 'id'=>$user->id,
                 'phone'=>$phone,
-                'password'=>$password,
+                'role' => $user->role->name,
                 'first_name'=>$first_name,
                 'last_name'=>$last_name,
                 'location'=>$location,
@@ -212,7 +219,7 @@ class AuthController extends Controller
             'user' => [
                 'id'=>$user->id,
                 'phone'=>$user->phone,
-                'password'=>$newPassword,
+                'role' => $user->role->name,
                 'first_name'=>$user->first_name,
                 'last_name'=>$user->last_name,
                 'location'=>json_decode($user->location),
@@ -261,5 +268,66 @@ class AuthController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+    public function updateUserInfo(Request $request)
+    {
+        $validator = Validator::make($request->all() , [
+            'first_name' => 'string',
+            'last_name' => 'string',
+            'location.country' => 'string|required_with:location.city,location.address',
+            'location.city' => 'string|required_with:location.country,location.address',
+            'location.address' => 'string|required_with:location.city,location.country',
+            'image ' =>'image|mimes:png,jpg'
+        ]);
+        if ($validator->fails()){
+            return response()->json([
+                'message' => "Updating failed",
+                'data' =>$validator->errors()
+            ],401);
+        }
+        $user = Auth::user();
+
+        if ($request->has('first_name')) {
+            $user->first_name = $request->input('first_name');
+        }
+
+        if ($request->has('last_name')) {
+            $user->last_name = $request->input('last_name');
+        }
+
+        if ($request->has('location')) {
+            $user->location = json_encode($request->input('location'));
+            ProcessLocation::dispatch($user, $request->input('location'));
+        }
+
+        if ($request->file('image')) {
+            $path = $request->file('image')->store('images/profile-images', 'public');
+            $user->image = 'storage/' . str_replace("public/", "", $path);
+        }
+
+        $user->save();
+
+        return response()->json([
+            'message' => 'User info updated successfully!',
+            'user' => [
+                'first_name'=>$user->first_name,
+                'last_name'=>$user->last_name,
+                'location'=>json_decode($user->location),
+                'image' => $user->image
+            ],
+        ] ,200);
+    }
+    public function getUserInfo() {
+        $user = Auth::user();
+        return response()->json([
+           'data' => [
+               'id'=>$user->id,
+               'phone'=>$user->phone,
+               'first_name'=>$user->first_name,
+               'last_name'=>$user->last_name,
+               'location'=> json_decode($user->location),
+               'image' => $user->image,
+               ],
+        ], 200);
     }
 }

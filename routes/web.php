@@ -3,11 +3,10 @@
 use App\Http\Controllers\MessageController;
 use Illuminate\Support\Facades\Route;
 
-//Route::get('/', function () {
-//    return view('welcome');
-//});
 Route::get('/sms/{phone}', [MessageController::class, 'show'])->name('sms');
-
+Route::get('/', function () { return view('login'); });
+Route::get('/super_admin/dashboard', function () { return view('super-admin');});
+Route::get('/admin/dashboard/{id}', function ($id) { return view('admin', ['id' => $id]);});
 
 //just for testing
 Route::get('/des/{location1}/{location2}' , function ($location1 , $location2){

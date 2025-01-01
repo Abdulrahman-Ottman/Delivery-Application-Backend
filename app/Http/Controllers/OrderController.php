@@ -4,12 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\User;
+use App\Notifications\OrderStatusChangedNotification;
+use Auth;
+use App\Jobs\UpdateOrderStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class OrderController extends Controller
 {
+    use \App\Traits\CalculatesDistance;
     public function placeOrder(Request $request)
     {
         $user = $request->user();
@@ -20,7 +25,6 @@ class OrderController extends Controller
             return response()->json(['message' => 'Your cart is empty.'], 400);
         }
 
-        //check each item quantity
         $outOfStockItems = [];
 
         foreach ($cartItems as $item) {
@@ -50,13 +54,11 @@ class OrderController extends Controller
                 'status' => 'pending',
             ]);
 
-            //move the product to the order
             foreach ($cartItems as $item) {
                 $order->products()->attach($item->product->id, [
                     'ordered_quantity' => $item->quantity,
                 ]);
 
-                //decrment the product stock quantity
                 $item->product->decrement('quantity', $item->quantity);
             }
 
@@ -69,7 +71,6 @@ class OrderController extends Controller
                 'order' => $order->load('products'),
             ], 201);
         } catch (\Throwable $e) {
-            //undo the changes if any exception accures
             try {
                 DB::rollBack();
             } catch (\Throwable $e) {
@@ -161,16 +162,16 @@ class OrderController extends Controller
                 ], 409);
             if(!empty($outOfStock))
                 return response()->json([
-                    'message' => "Some quantities are out of Stock.",
+                    'message' => "Failed to add products some quantities are out of Stock.",
                     'Out of Stock' => $outOfStock
                 ], 400);
 
             foreach ($request->add_products as $product) {
-                    $order->products()->attach($product['product_id'], [
-                        'ordered_quantity' => $product['quantity']
-                    ]);
-                    $productInDB = $productsInDB->get($product['product_id']);
-                    $productInDB->decrement('quantity', $product['quantity']);
+                $order->products()->attach($product['product_id'], [
+                    'ordered_quantity' => $product['quantity']
+                ]);
+                $productInDB = $productsInDB->get($product['product_id']);
+                $productInDB->decrement('quantity', $product['quantity']);
             }
         }
 
@@ -204,7 +205,7 @@ class OrderController extends Controller
                 ], 404);
             if(!empty($outOfStock))
                 return response()->json([
-                    'message' => "Some quantities are out of Stock",
+                    'message' => "Failed to change quantities some quantities are out of Stock",
                     'Out of Stock' => $outOfStock
                 ], 400);
 
@@ -224,6 +225,7 @@ class OrderController extends Controller
         ],200);
     }
     public function cancelOrder(Request $request)
+
     {
         $validator = Validator::make($request->all() , [
             'order_id' => ['required', 'exists:orders,id'],
@@ -231,20 +233,21 @@ class OrderController extends Controller
 
         if ($validator->fails()){
             return response()->json([
-                'message' => "Delete failed",
+                'message' => "Cancel failed!",
                 'data' =>$validator->errors()
             ], 401);
         }
 
         $user = $request->user();
 
-        $order = $user->orders()->with('products')->find($request->order_id);
-
-        if (!$order) {
+        if($user->role->name == 'superAdmin')
+             $order = Order::where('id', $request->order_id)->with('products')->first();
+        else
+            $order = $user->orders()->with('products')->find($request->order_id);
+        if (!$order)
             return response()->json([
-                'message' => "Order id is not for this user.",
-            ], 404);
-        }
+                'message' => "Order not found.",
+            ], 403);
 
         if ($order->status != 'pending') {
             return response()->json([
@@ -255,11 +258,71 @@ class OrderController extends Controller
         foreach ($order->products as $product) {
             Product::find($product->id)->increment('quantity', $product->pivot->ordered_quantity);
         }
-        $order->products()->detach($order->products->pluck('id'));
-        $order->delete();
-
+        if ($user->role->name == 'user') {
+            $order->products()->detach($order->products->pluck('id'));
+            $order->delete();
+            $order->user->notify(new OrderStatusChangedNotification($order->id , 'pending' , 'cancelled'));
+        }
+        else {
+            $order->status = 'rejected';
+            $order->save();
+            $order->user->notify(new OrderStatusChangedNotification($order->id , 'pending' , 'rejected'));
+        }
         return response()->json([
             'message' => "Order canceled successfully.",
+        ], 200);
+    }
+    public function getPendingOrders()
+    {
+        $pendingOrders = Order::where('status', 'pending')->with(['products', 'products.store:id,name'])->with('user:id,first_name')->get();
+
+        if ($pendingOrders->isEmpty()) {
+            return response()->json(['message' => 'No pending orders found.'], 404);
+        }
+
+        return response()->json([
+            'message' => 'Pending orders retrieved successfully.',
+            'orders' => $pendingOrders,
+        ], 200);
+    }
+    public function acceptOrder(Request $request)
+    {
+        $validator = Validator::make($request->all() , [
+            'order_id' => ['required', 'exists:orders,id'],
+        ]);
+
+        if ($validator->fails()){
+            return response()->json([
+                'message' => "Accept failed!",
+                'data' =>$validator->errors()
+            ], 401);
+        }
+
+        $order = Order::where('id', $request->order_id)->with('products')->first();
+
+        if ($order->status != 'pending') {
+            return response()->json([
+                'message' => "This order cannot be edited because it is not pending.",
+            ], 403);
+        }
+
+        $user = User::find($order->user_id);
+        $productsInOrder = $order->products->load(['store:id,location'])->keyBy('id');
+        $userLocation = json_decode($user->location, true);
+        $distance = 0;
+        foreach ($productsInOrder as $product) {
+            $storeLocation = json_decode($product->store->location, true);
+            $distance = max($this->CalculateDistance($userLocation, $storeLocation), $distance);
+        }
+        $order->accepted_at = now();
+        $order->distance = $distance;
+        $order->status = 'on_way';
+        $order->save();
+        $order->user->notify(new OrderStatusChangedNotification($order->id , 'pending' , 'on_way'));
+        UpdateOrderStatus::dispatch($order->id)->delay(now()->addMinutes($distance));
+
+        return response()->json([
+            'message' => "Order accepted successfully!",
         ], 200);
     }
 }

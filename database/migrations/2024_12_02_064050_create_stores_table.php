@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->json('location');
             $table->string('image')->nullable();
+            $table->foreignIdFor(\App\Models\User::class)->constrained()->cascadeOnDelete();
             $table->timestamps();
         });
     }

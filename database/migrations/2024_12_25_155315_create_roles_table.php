@@ -11,12 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('orders', function (Blueprint $table) {
+        Schema::create('roles', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(\App\Models\User::class)->constrained()->cascadeOnDelete();
-            $table->enum('status', ['pending', 'rejected', 'on_way', 'delivered'])->default('pending');
-            $table->unsignedInteger('distance')->nullable();
-            $table->timestamp('accepted_at')->nullable();
+            $table->string('name')->unique();
             $table->timestamps();
         });
     }
@@ -26,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('orders');
+        Schema::dropIfExists('roles');
     }
 };
