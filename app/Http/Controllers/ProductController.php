@@ -16,7 +16,7 @@ class ProductController extends Controller
     {
 
         $productsQuery = Product::select('id', 'name', 'price', 'store_id','quantity')
-            ->with(['mainImage:product_id,path', 'store:id,name,location']);
+            ->with(['mainImage:product_id,path', 'store:id,name,location,discount']);
 
         $this->filterProductsAndStores($request, $productsQuery, null);
 

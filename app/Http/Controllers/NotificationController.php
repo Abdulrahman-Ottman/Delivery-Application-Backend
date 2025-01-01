@@ -12,6 +12,9 @@ class NotificationController extends Controller
         $unreadNotifications = $user->unreadNotifications->select('id', 'data', 'read_at', 'created_at');
         $readNotifications = $user->readNotifications->select('id', 'data', 'read_at', 'created_at');
         if ($readNotifications->isNotEmpty() || $unreadNotifications->isNotEmpty()) {
+
+            $user->unreadNotifications->markAsRead();
+
             return response()->json([
                 'readNotifications' => $readNotifications,
                 'unread_notifications' => $unreadNotifications,

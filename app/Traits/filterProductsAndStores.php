@@ -12,7 +12,7 @@ trait filterProductsAndStores
 
         if ($productsQuery && !empty($key)) {
             $productsQuery->where('name', 'LIKE', '%' . $key . '%')
-                ->with(['mainImage:product_id,path', 'store:id,name'])
+                ->with(['mainImage:product_id,path', 'store:id,name,location,discount'])
                 ->select('id', 'name', 'price', 'store_id', 'created_at');
         }
 
