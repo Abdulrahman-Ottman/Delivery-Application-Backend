@@ -17,6 +17,7 @@ Route::controller(AuthController::class)->group(function (){
     Route::post('/register', 'register');
     Route::post('/resetPassword', 'resetPassword');
     Route::post('/login', 'login')->name('login');
+    Route::get('/getUserInfo', 'getUserInfo')->middleware('auth:sanctum');
     Route::post('/logout', 'logout')->middleware('auth:sanctum');
     Route::post('/changePassword', 'changePassword')->middleware('auth:sanctum');
     Route::post('/updateUserInfo', 'updateUserInfo')->middleware('auth:sanctum');

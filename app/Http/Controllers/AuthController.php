@@ -47,7 +47,6 @@ class AuthController extends Controller
             'user' => [
                 'id'=>$user->id,
                 'phone'=>$user->phone,
-                'password'=>$request->password,
                 'role' => $user->role->name,
                 'store_id' => $store_id,
                 'first_name'=>$user->first_name,
@@ -181,7 +180,6 @@ class AuthController extends Controller
             'user' => [
                 'id'=>$user->id,
                 'phone'=>$phone,
-                'password'=>$password,
                 'role' => $user->role->name,
                 'first_name'=>$first_name,
                 'last_name'=>$last_name,
@@ -221,7 +219,6 @@ class AuthController extends Controller
             'user' => [
                 'id'=>$user->id,
                 'phone'=>$user->phone,
-                'password'=>$newPassword,
                 'role' => $user->role->name,
                 'first_name'=>$user->first_name,
                 'last_name'=>$user->last_name,
@@ -319,5 +316,18 @@ class AuthController extends Controller
                 'image' => $user->image
             ],
         ] ,200);
+    }
+    public function getUserInfo() {
+        $user = Auth::user();
+        return response()->json([
+           'data' => [
+               'id'=>$user->id,
+               'phone'=>$user->phone,
+               'first_name'=>$user->first_name,
+               'last_name'=>$user->last_name,
+               'location'=> json_decode($user->location),
+               'image' => $user->image,
+               ],
+        ], 200);
     }
 }
