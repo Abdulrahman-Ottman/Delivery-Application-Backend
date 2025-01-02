@@ -64,7 +64,14 @@ class CartController extends Controller
     {
         $user = $request->user();
 
-        $cartItems = $user->cartItems()->with('product')->get();
+        $cartItems = $user->cartItems()->with([
+            'product' => function ($query) {
+                $query->with([
+                    'mainImage:id,product_id,path',
+                    'store:id,name,location,discount'
+                ]);
+            }
+        ])->get();
 
         return response()->json([
             'cart_items' => $cartItems
