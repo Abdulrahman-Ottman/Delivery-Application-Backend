@@ -96,10 +96,12 @@ class StoreController extends Controller
         $store->name = $request->get('name');
         $store->user_id = $request->get('user_id');
         $store->location = $request->input('location');
+        $store->image = null;
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('images/stores', 'public');
+            $store->image = 'storage/' . str_replace('public/', '', $path);
         }
-        $store->image = 'storage/' . str_replace('public/', '', $path) ?? null;
+
         $store->save();
 
         ProcessLocation::dispatch($store, json_decode($request->input('location'), true));

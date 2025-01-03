@@ -44,8 +44,6 @@ class OrderController extends Controller
             ], 400);
         }
 
-
-
         try {
             DB::beginTransaction();
 
@@ -225,7 +223,6 @@ class OrderController extends Controller
         ],200);
     }
     public function cancelOrder(Request $request)
-
     {
         $validator = Validator::make($request->all() , [
             'order_id' => ['required', 'exists:orders,id'],

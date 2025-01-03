@@ -19,11 +19,8 @@ class AdController extends Controller
             ], 404);
         }
 
-        $currentAd = $ads->first();
-
         return response()->json([
             'data' => $ads,
-
         ], 200);
     }
 
@@ -41,7 +38,9 @@ class AdController extends Controller
             ],401);
         }
 
-        $path = $request->file('image')->store('ads', 'public');
+        $path = $request->file('image')->store('images/ads', 'public');
+        $path = 'storage/' . str_replace("public/", "", $path);
+
         $ad = Ad::create([
             'image' => $path,
             'store_id' => $request->store_id

@@ -17,8 +17,6 @@ use Illuminate\Testing\Fluent\Concerns\Has;
 class AuthController extends Controller
 {
     use SendsMessages;
-
-    //add endpoint for get user info throw token
     public function login(Request $request){
         $validator = Validator::make($request->all() , [
             'phone' => ['required' ,'regex:/^\+(\d{1,3})[-.\s]?\(?(\d{1,4})\)?[-.\s]?\(?(\d{1,4})\)?[-.\s]?\d{3,10}$/'],
@@ -155,10 +153,11 @@ class AuthController extends Controller
         $first_name = $request->input('first_name');
         $last_name = $request->input('last_name');
         $location = $request->input('location');
-        $path=null;
-        if($request->file('image'))
+        $path = null;
+        if($request->file('image')) {
             $path = $request->file('image')->store('images/profile-images', 'public');
-
+            $path = 'storage/' . str_replace("public/", "", $path);
+        }
         $user=User::create([
             'phone'=>$phone,
             'password'=>Hash::make($password),
@@ -167,7 +166,7 @@ class AuthController extends Controller
             'first_name'=>$first_name,
             'last_name'=>$last_name,
             'location'=>json_encode($location),
-            'image' => 'storage/'.str_replace("public/", "", $path)
+            'image' => $path
         ]);
         Cache::forget($token);
 
@@ -184,7 +183,7 @@ class AuthController extends Controller
                 'first_name'=>$first_name,
                 'last_name'=>$last_name,
                 'location'=>$location,
-                'image' => 'storage/'.$path
+                'image' => $path
             ],
         ] ,200);
     }

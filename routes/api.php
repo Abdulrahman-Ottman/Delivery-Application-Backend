@@ -41,6 +41,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::controller(CategoryController::class)->prefix('categories')->group(function () {
         Route::get('/', 'getAllCategories');
         Route::get('{category}/subcategories', 'getSubcategoriesByCategory');
+        Route::post('/addCategory', 'store');
     });
 
     Route::controller(AdController::class)->group(function () {
