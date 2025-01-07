@@ -29,12 +29,12 @@ class Product extends Model
     {
         return $this->hasOne(ProductImage::class)->where('is_main', true);
     }
-
-
     public function categories() : BelongsToMany
     {
         return $this->belongsToMany(Category::class);
     }
-
+    public function users() {
+        return $this->belongsToMany(User::class, 'favorites');
+    }
 
 }

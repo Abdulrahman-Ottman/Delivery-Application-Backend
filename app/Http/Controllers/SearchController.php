@@ -37,6 +37,13 @@ class SearchController extends Controller
         }
 
         $products = $productsQuery->get();
+
+        $favorites = auth()->user()->favorites->pluck('id')->toArray();
+
+        $products->each(function ($product) use ($favorites) {
+            $product->is_favorite = in_array($product->id, $favorites);
+        });
+
         $stores = $storesQuery->get();
 
         if ($products->isEmpty() && $stores->isEmpty()) {

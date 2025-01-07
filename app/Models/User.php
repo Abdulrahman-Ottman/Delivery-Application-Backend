@@ -60,10 +60,6 @@ class User extends Authenticatable
     public function store() : HasOne{
         return $this->hasOne(Store::class);
     }
-    public function favorites() : BelongsToMany
-    {
-        return $this->belongsToMany(Product::class, 'favorites');
-    }
     /**
      * Get the attributes that should be cast.
      *

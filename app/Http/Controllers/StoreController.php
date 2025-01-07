@@ -56,6 +56,12 @@ class StoreController extends Controller
             return response()->json(['message' => 'Store not found.'], 404);
         }
 
+        $favorites = auth()->user()->favorites->pluck('id')->toArray();
+
+        $store->products->each(function ($product) use ($favorites) {
+            $product->is_favorite = in_array($product->id, $favorites);
+        });
+
         $products = $store->products->map(function ($product) {
             return [
                 'id' => $product->id,
@@ -63,6 +69,7 @@ class StoreController extends Controller
                 'price' => $product->price,
                 'quantity' => $product->quantity,
                 'image' => $product->images->isNotEmpty() ? $product->images->first()->path : null,
+                'is_favorite' =>  $product->is_favorite
             ];
         });
         return response()->json([
