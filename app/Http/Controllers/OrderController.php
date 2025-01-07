@@ -85,7 +85,11 @@ class OrderController extends Controller
     {
         $user = $request->user();
 
-        $orders = $user->orders()->with('products')->get();
+        $orders = $user->orders()->with('products')->with([
+            'products' => function ($query) {
+                $query->with('mainImage:id,product_id,path');
+            }
+        ])->get();
 
         if ($orders->isEmpty()) {
             return response()->json(['message' => 'No orders found.'], 404);

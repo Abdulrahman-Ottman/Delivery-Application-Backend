@@ -87,9 +87,8 @@ class SearchController extends Controller
                 }
 
                 $categories[] = [
-                    $category->name => [
-                        'parents' => array_reverse($parents),
-                    ],
+                    'category' => $category->name,
+                    'parents' => array_reverse($parents),
                 ];
             }
             return response()->json([

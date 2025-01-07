@@ -27,7 +27,7 @@ class AdController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(),[
-            'image' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            'image' => 'required|image|max:2048',
             'store_id' => 'required|exists:stores,id'
         ]);
 

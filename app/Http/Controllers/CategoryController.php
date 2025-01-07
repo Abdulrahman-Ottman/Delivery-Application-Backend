@@ -49,7 +49,7 @@ class CategoryController extends Controller
             'name' => 'required',
             'color' => 'required',
             'parent_id' => 'exists:categories,id',
-            'image' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            'image' => 'required|image|max:2048',
         ]);
 
         if ($validator->fails()){
