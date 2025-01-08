@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Cart;
 use App\Models\Product;
+use http\Env\Response;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class CartController extends Controller
@@ -76,5 +78,25 @@ class CartController extends Controller
         return response()->json([
             'cart_items' => $cartItems
         ]);
+    }
+
+    public function removeItem(Request $request){
+
+        $validator = Validator::make($request->all() , [
+           'id'=> ['required','exists:carts,id']
+       ]);
+
+        if ($validator->fails()){
+            return response()->json([
+                'message' => "failed to remove the item",
+                'data' =>$validator->errors()
+            ],400);
+        }
+
+        Auth::user()->cartItems()->find($request->id)->delete();
+
+        return \response()->json([
+            'message'=>"item removed successfully",
+        ],200);
     }
 }
