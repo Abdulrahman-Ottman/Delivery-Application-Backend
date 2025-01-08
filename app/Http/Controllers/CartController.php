@@ -99,4 +99,55 @@ class CartController extends Controller
             'message'=>"item removed successfully",
         ],200);
     }
+
+    public function editCartItem(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id' => ['required', 'exists:carts,id'],
+            'quantity' => ['required', 'integer', 'min:1'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Failed to update cart item',
+                'data' => $validator->errors(),
+            ], 400);
+        }
+
+        $id = $request->input('id');
+        $quantity = $request->input('quantity');
+
+        $cartItem = Cart::where('id', $id)
+            ->where('user_id', auth()->id())
+            ->first();
+
+        if (!$cartItem) {
+            return response()->json([
+                'message' => 'Cart item not found.',
+            ], 404);
+        }
+
+        $product = Product::find($cartItem->product_id);
+
+        if (!$product) {
+            return response()->json([
+                'message' => 'Product not found.',
+            ], 404);
+        }
+
+        if ($quantity > $product->quantity) {
+            return response()->json([
+                'message' => 'Not enough stock available.',
+            ], 422);
+        }
+
+        $cartItem->quantity = $quantity;
+        $cartItem->save();
+
+        return response()->json([
+            'message' => 'Cart item updated successfully.',
+            'data' => $cartItem,
+        ], 200);
+    }
+
 }
