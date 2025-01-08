@@ -14,7 +14,6 @@ class ProductController extends Controller
     use filterProductsAndStores, sortProductsAndStores;
     public function getProducts(Request $request)
     {
-
         $productsQuery = Product::select('id', 'name', 'price', 'store_id','quantity')
             ->with(['mainImage:product_id,path', 'store:id,name,location,discount']);
 
@@ -24,6 +23,12 @@ class ProductController extends Controller
         $this->sortProductsAndStores($sortBy, $productsQuery, null);
 
         $products = $productsQuery->paginate(10);
+
+        $favorites = auth()->user()->favorites->pluck('id')->toArray();
+
+        $products->each(function ($product) use ($favorites) {
+            $product->is_favorite = in_array($product->id, $favorites);
+        });
 
         $products->appends($request->query());
 
@@ -53,6 +58,10 @@ class ProductController extends Controller
     {
         $product = Product::find($request->id);
 
+        $favorites = auth()->user()->favorites->pluck('id')->toArray();
+
+        $product->is_favorite = in_array($product->id, $favorites);
+
         if (!$product) {
             return response()->json(['message' => 'Product not found.'], 404);
         }
@@ -69,6 +78,7 @@ class ProductController extends Controller
             'store_location' => $product->store ? json_decode($product->store->location) : null,
             'images' => $product->images->pluck('path'),
             'main_image' => $product->images->firstWhere('is_main', true)->path ?? null,
+            'is_favorite' => $product->is_favorite
         ]);
     }
     public function addProduct(Request $request)

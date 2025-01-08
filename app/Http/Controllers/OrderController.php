@@ -44,8 +44,6 @@ class OrderController extends Controller
             ], 400);
         }
 
-
-
         try {
             DB::beginTransaction();
 
@@ -87,7 +85,11 @@ class OrderController extends Controller
     {
         $user = $request->user();
 
-        $orders = $user->orders()->with('products')->get();
+        $orders = $user->orders()->with('products')->with([
+            'products' => function ($query) {
+                $query->with('mainImage:id,product_id,path');
+            }
+        ])->get();
 
         if ($orders->isEmpty()) {
             return response()->json(['message' => 'No orders found.'], 404);
@@ -225,7 +227,6 @@ class OrderController extends Controller
         ],200);
     }
     public function cancelOrder(Request $request)
-
     {
         $validator = Validator::make($request->all() , [
             'order_id' => ['required', 'exists:orders,id'],

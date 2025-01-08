@@ -21,7 +21,7 @@ class CartController extends Controller
 
         if ($validator->fails()){
             return response()->json([
-                'message' => "Registration failed",
+                'message' => "Failed to add to cart",
                 'data' =>$validator->errors()
             ],401);
         }

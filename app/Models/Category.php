@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Category extends Model
 {
+    protected $fillable = ['name', 'image', 'parent_id', 'color'];
     public function subcategories() : HasMany
     {
         return $this->hasMany(Category::class, 'parent_id');
