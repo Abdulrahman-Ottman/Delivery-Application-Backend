@@ -218,7 +218,7 @@ class AuthController extends Controller
             'user' => [
                 'id'=>$user->id,
                 'phone'=>$user->phone,
-                'role' => $user->role->name,
+//                'role' => $user->role->name,
                 'first_name'=>$user->first_name,
                 'last_name'=>$user->last_name,
                 'location'=>json_decode($user->location),
@@ -308,7 +308,10 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'User info updated successfully!',
+            'access_token'=>$user->currentAccessToken(),
             'user' => [
+                'id'=>$user->id,
+                'phone'=>$user->phone,
                 'first_name'=>$user->first_name,
                 'last_name'=>$user->last_name,
                 'location'=>json_decode($user->location),
@@ -318,15 +321,17 @@ class AuthController extends Controller
     }
     public function getUserInfo() {
         $user = Auth::user();
+
         return response()->json([
-           'data' => [
-               'id'=>$user->id,
-               'phone'=>$user->phone,
-               'first_name'=>$user->first_name,
-               'last_name'=>$user->last_name,
-               'location'=> json_decode($user->location),
-               'image' => $user->image,
-               ],
-        ], 200);
+            'access_token'=>request()->bearerToken(),
+            'user' => [
+                'id'=>$user->id,
+                'phone'=>$user->phone,
+                'first_name'=>$user->first_name,
+                'last_name'=>$user->last_name,
+                'location'=>json_decode($user->location),
+                'image' => $user->image
+            ],
+            ],200);
     }
 }
