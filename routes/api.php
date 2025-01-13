@@ -68,7 +68,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/edit-order', [OrderController::class, 'editOrder']);
         Route::post('/favorites', [FavoriteController::class, 'addFavorite']);
         Route::get('/favorites', [FavoriteController::class, 'getFavorites']);
-
+        Route::post('/favorites/delete', [FavoriteController::class, 'deleteFavorite']);
         Route::get('/notifications', [NotificationController::class, 'index']);
         Route::patch('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
     });

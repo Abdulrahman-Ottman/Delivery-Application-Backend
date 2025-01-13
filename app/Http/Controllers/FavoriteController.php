@@ -90,4 +90,25 @@ class FavoriteController extends Controller
             'total' => $products->total(),
         ]);
     }
+
+    public function deleteFavorite(Request $request){
+
+        $validator = Validator::make($request->all() , [
+            'id'=> ['required','exists:favorites,product_id']
+        ]);
+
+        if ($validator->fails()){
+            return response()->json([
+                'message' => "Failed to remove the item!",
+                'data' =>$validator->errors()
+            ],400);
+        }
+
+        Auth::user()->favorites()->detach($request->id);
+
+        return \response()->json([
+            'message'=>"Item removed successfully.",
+        ],200);
+    }
+
 }

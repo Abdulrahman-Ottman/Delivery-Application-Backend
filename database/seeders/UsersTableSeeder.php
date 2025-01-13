@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Jobs\ProcessLocation;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -55,8 +57,12 @@ class UsersTableSeeder extends Seeder
                 ]),
                 'phone_verified_at' => Carbon::now(),
                 'role_id' => '3',
-
             ]
         ]);
+        foreach (User::all() as $user) {
+            $location = json_decode($user->location, true);
+            ProcessLocation::dispatch($user, $location);
+        }
+
     }
 }

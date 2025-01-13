@@ -93,7 +93,7 @@
 
 <script src="{{url('bootstrap.bundle.min.js')}}"></script>
 <script>
-    const url = 'http://192.168.9.54:8000';
+    const url = 'http://192.168.1.107:8000';
     const accessToken = localStorage.getItem('access_token');
     if (!accessToken){
         localStorage.clear();
@@ -395,7 +395,7 @@
                 modal.hide();
                 fetchStores();
             }
-            else if(response.status===422) {
+            else if(response.status===422||response.status===401) {
                 alert('Admin id not correct or not available');
                 console.error('Incorrect admin id.', 422);
             }
