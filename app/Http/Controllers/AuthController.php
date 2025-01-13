@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Testing\Fluent\Concerns\Has;
+use Storage;
 
 class AuthController extends Controller
 {
@@ -300,8 +301,14 @@ class AuthController extends Controller
         }
 
         if ($request->file('image')) {
+            $oldPath = null;
+            if($user->image)
+                $oldPath = str_replace('storage',"", $user->image);
             $path = $request->file('image')->store('images/profile-images', 'public');
             $user->image = 'storage/' . str_replace("public/", "", $path);
+            if($oldPath)
+                Storage::disk('public')->delete($oldPath);
+
         }
 
         $user->save();
