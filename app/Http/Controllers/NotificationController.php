@@ -23,7 +23,7 @@ class NotificationController extends Controller
 
         return response()->json([
             'message' => 'No available notifications'
-        ] , 200);
+        ] , 404);
     }
 
     public function markAsRead(Request $request, $id)
