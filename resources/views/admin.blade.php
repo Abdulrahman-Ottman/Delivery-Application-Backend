@@ -55,7 +55,7 @@
         <div class="col-md-3 text-end d-flex justify-content-end gap-3" id="buttonContainer">
             <script>
                 const role = JSON.parse(localStorage.getItem('user'))['role'];
-                if (role === 'admin') {
+                // if (role === 'admin') {
                     const addProductButton = document.createElement('button');
                     addProductButton.className = 'btn btn-success';
                     addProductButton.setAttribute('data-bs-toggle', 'modal');
@@ -63,7 +63,7 @@
                     addProductButton.textContent = 'Add Product';
 
                     document.getElementById('buttonContainer').appendChild(addProductButton);
-                }
+                // }
             </script>
             <button class="btn btn-danger" id="logoutButton">Logout</button>
         </div>
