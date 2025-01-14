@@ -52,7 +52,7 @@ class FavoriteController extends Controller
         $sortBy = $request->get('sort');
         $this->sortProductsAndStores($sortBy, $productsQuery, null);
 
-        $products = $productsQuery->paginate(10);
+        $products = $productsQuery->paginate(100);
         $products->appends($request->query());
 
         if ($products->isEmpty()) {
