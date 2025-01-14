@@ -47,7 +47,6 @@ class CategoryController extends Controller
     {
         $validator = Validator::make($request->all(),[
             'name' => 'required',
-            'color' => 'required',
             'parent_id' => 'exists:categories,id',
             'image' => 'required|image|max:2048',
         ]);

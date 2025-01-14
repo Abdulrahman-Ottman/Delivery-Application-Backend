@@ -315,7 +315,7 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'User info updated successfully!',
-            'access_token'=>$user->currentAccessToken(),
+            'access_token'=>request()->bearerToken(),
             'user' => [
                 'id'=>$user->id,
                 'phone'=>$user->phone,
