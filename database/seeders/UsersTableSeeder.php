@@ -59,6 +59,24 @@ class UsersTableSeeder extends Seeder
                 'role_id' => '3',
             ]
         ]);
+        $i=0;
+        while($i++<10){
+            DB::table('users')->insert([
+                [
+                    'first_name' => 'Alaa'.$i,
+                    'last_name' => 'Test',
+                    'phone' => '+96399999986'.$i,
+                    'password' => Hash::make('password'),
+                    'location' => json_encode([
+                        'city' => 'New York',
+                        'country' => 'USA',
+                        'address' => 'Example Street 123'
+                    ]),
+                    'phone_verified_at' => Carbon::now(),
+                    'role_id' => '2',
+                ]
+            ]);
+        }
         foreach (User::all() as $user) {
             $location = json_decode($user->location, true);
             ProcessLocation::dispatch($user, $location);

@@ -15,7 +15,7 @@ class StoreController extends Controller
     use sortProductsAndStores, filterProductsAndStores;
     public function getStores(Request $request)
     {
-        $storesQuery = Store::select('id', 'name', 'location', 'image');
+        $storesQuery = Store::select('id', 'name', 'location', 'image', 'discount');
 
         $this->filterProductsAndStores($request, null, $storesQuery);
 
