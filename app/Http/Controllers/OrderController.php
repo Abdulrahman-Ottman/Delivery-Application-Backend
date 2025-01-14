@@ -63,6 +63,7 @@ class OrderController extends Controller
             $user->cartItems()->delete();
 
             DB::commit();
+            $order->user->notify(new OrderStatusChangedNotification($order->id , '-' , 'pending'));
 
             return response()->json([
                 'message' => 'Order placed successfully!',
