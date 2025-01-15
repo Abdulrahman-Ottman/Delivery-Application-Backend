@@ -18,10 +18,9 @@ class DatabaseSeeder extends Seeder
             RolesSeeder::class,
             ProductsTableSeeder::class,
             StoresTableSeeder::class,
-
             CategoriesTableSeeder::class,
-            AdsTableSeeder::class,
             ProductCategoryTableSeeder::class,
+            AdsTableSeeder::class,
 
             //ProductsImagesTableSeeder::class,
         ]);

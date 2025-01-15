@@ -277,14 +277,6 @@ class ProductsTableSeeder extends Seeder
         $apiKey = '48231768-ac9eeecee0143eefae97e14bf';
         $query = urlencode("{$productName} product");
         $response = $this->httpClient->get("https://pixabay.com/api/?key={$apiKey}&q={$query}");
-//        $response = $this->client->request('GET', 'search', [
-//            'headers' => [
-//                'Authorization' => env('XwGm2nXWszdRQMXA6LDj41oK7WIyxyKVrBqQqXyGsnRVYZHDD7Sbb9jv'),
-//            ],
-//            'query' => [
-//                'query' => $query,
-//            ],
-//        ]);
         $data = json_decode($response->getBody(), true);
         if (isset($data['hits'][0]['webformatURL'])) {
             $imageUrl = $data['hits'][0]['webformatURL'];

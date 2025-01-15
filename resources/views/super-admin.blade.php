@@ -93,7 +93,7 @@
 
 <script src="{{url('bootstrap.bundle.min.js')}}"></script>
 <script>
-    const url = 'http://192.168.1.107:8000';
+    const url = 'http://10.65.11.17:8000';
     const accessToken = localStorage.getItem('access_token');
     if (!accessToken){
         localStorage.clear();
