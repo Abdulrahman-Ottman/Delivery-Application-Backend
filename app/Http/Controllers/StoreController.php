@@ -77,6 +77,7 @@ class StoreController extends Controller
             'name' => $store->name,
             'location' => json_decode($store->location),
             'image' => $store->image,
+            'discount'=>$store->discount,
             'products' => $products,
         ]);
     }
