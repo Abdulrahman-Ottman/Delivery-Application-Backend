@@ -80,7 +80,8 @@ class OrderController extends Controller
                 'message' => 'Failed to place the order.',
                 'error' => $e->getMessage(),
             ], 500);
-        }     }
+        }
+    }
 
     public function getUserOrders(Request $request)
     {
@@ -179,12 +180,19 @@ class OrderController extends Controller
         }
 
         if ($request->has('remove_products')) {
-            foreach ($request->remove_products as $product_id) {
-                $orderedProduct = $productsInOrder->get($product_id);
+            foreach ($request->remove_products as $productToRemove) {
+                $orderedProduct = $productsInOrder->get($productToRemove['product_id']);
                 if ($orderedProduct)
-                    Product::find($product_id)->increment('quantity', $orderedProduct->pivot->ordered_quantity);
+                    Product::find($productToRemove['product_id'])->increment('quantity', $orderedProduct->pivot->ordered_quantity);
+                $order->products()->detach($productToRemove['product_id']);
             }
-            $order->products()->detach($request->remove_products);
+            if ($order->products()->count()==0) {
+                $order->delete();
+                $order->user->notify(new OrderStatusChangedNotification($order->id , 'pending' , 'cancelled'));
+                return response()->json([
+                    'message' => "Order canceled.",
+                ], 200);
+            }
         }
 
         if ($request->has('change_quantity')) {
