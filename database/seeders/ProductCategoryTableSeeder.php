@@ -223,7 +223,7 @@ class ProductCategoryTableSeeder extends Seeder
             ['product_id' => 167, 'category_id' => 2],
             ['product_id' => 168, 'category_id' => 2],
             ['product_id' => 169, 'category_id' => 2],
-            ['product_id' => 170, 'category_id' => 2],
+            ['product_id' => 170, 'category_id' => 3],
             ['product_id' => 171, 'category_id' => 2],
             ['product_id' => 172, 'category_id' => 2],
             ['product_id' => 173, 'category_id' => 2],
@@ -253,6 +253,16 @@ class ProductCategoryTableSeeder extends Seeder
             ['product_id' => 197, 'category_id' => 5],
             ['product_id' => 198, 'category_id' => 5],
             ['product_id' => 199, 'category_id' => 5],
+
+            ['product_id' => 170, 'category_id' => 10],
+            ['product_id' => 165, 'category_id' => 9],
+            ['product_id' => 105, 'category_id' => 11],
+            ['product_id' => 105, 'category_id' => 12],
+            ['product_id' => 7, 'category_id' => 8],
+            ['product_id' => 7, 'category_id' => 7],
+            ['product_id' => 25, 'category_id' => 13],
+            ['product_id' => 25, 'category_id' => 14],
+
         ]);
     }
 }

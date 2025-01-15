@@ -68,6 +68,7 @@ class StoreController extends Controller
                 'name' => $product->name,
                 'price' => $product->price,
                 'quantity' => $product->quantity,
+                'discount' => $product->discount,
                 'image' => $product->images->isNotEmpty() ? $product->images->first()->path : null,
                 'is_favorite' =>  $product->is_favorite
             ];
